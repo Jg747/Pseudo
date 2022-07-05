@@ -1,4 +1,4 @@
-NAME = Pseudo
+NAME = pseudo
 
 # Compilers: gcc, g++, clang, clang++
 CC = g++
@@ -10,21 +10,22 @@ SOURCE = src
 BIN = bin
 
 # Example: -lncurses -lyaml ...
-LIBRARIES = 
+LIBRARIES = -lncurses
+
+RM = rm
+MV = mv
+CP = cp
 
 ifeq ($(OS), Windows_NT)
 	DEST = C:\\Programs\\$(NAME)
-	RM = del
-	RMDIR = rmdir
-	MV = move
 	EXECUTABLE = $(NAME).exe
-	CP = copy
+	MK = mingw32-make
+	OTHER = cparse/shunting-yard.cpp cparse/packToken.cpp cparse/functions.cpp cparse/containers.cpp
 else
 	DEST = /usr/local/bin
-	RM = rm
-	MV = mv
 	EXECUTABLE = $(NAME)
-	CP = cp
+	MK = make
+	OTHER = $(BIN)/builtin-features.o $(BIN)/core-shunting-yard.o
 endif
 
 default: build
@@ -33,7 +34,9 @@ build:
 ifeq ($(wildcard $(BIN)/.*),)
 	@mkdir $(BIN)
 endif
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.c
+	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
+	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
+	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
 	@$(CC) *.o $(LIBRARIES) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
 	@echo [Makefile] Done
@@ -50,7 +53,7 @@ ifeq ($(wildcard $(BIN)/.*),)
 	@mkdir $(BIN)
 endif
 	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.c
-	@$(CC) *.o $(LIBRARIES) -o $(EXECUTABLE)
+	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
 
 ifeq ($(OS), Windows_NT)
@@ -83,21 +86,15 @@ endif
 	@echo [Makefile] Done
 
 install:
-ifndef CH
-	@read -p "Command line? (y/n) " choice; make install CH=$$choice --no-print-directory
-else
-
-ifeq ($(CH), $(filter $(CH), y Y 1))
-ifneq ($(shell id -u), 0)
-	@echo [Makefile] Root mode required!
+ifeq ($(OS), Windows_NT)
+ifndef cmd
+	# Add to cmd
+endif
+	# rest of the installation
 else
 	@$(CP) ./$(EXECUTABLE) $(DEST)
+endif
 	@echo [Makefile] Installed
-endif
-else
-	@echo [Makefile] Not installed
-endif
-endif
 
 remove:
 ifneq ($(wildcard $(DEST)/.*),)
