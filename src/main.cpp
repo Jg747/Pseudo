@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 		g = new Gui();
 
 		try {
-			while(menu() != 0);
+			while(menu(g, d) != 0);
 		} catch (const std::exception &e) {
 			std::cout << TITLE << "\n\t\t\tQualcosa e' andato storto\n\n" << FOOTER;
 		}

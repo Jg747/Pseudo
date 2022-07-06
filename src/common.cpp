@@ -31,7 +31,7 @@ int menu(Gui *g, Compiler *d) {
 						}
 					} while (!test.is_open());
 
-					d = new Compiler(0, nome, g);
+					d = new Compiler(0 + (g->getEasterEgg() ? 3 : 0), nome, g);
 					d->start();
 					delete d;
 					break;
@@ -49,7 +49,7 @@ int menu(Gui *g, Compiler *d) {
 						}
 					} while (!test.is_open());
 
-					d = new Compiler(1, nome, g);
+					d = new Compiler(1 + (g->getEasterEgg() ? 3 : 0), nome, g);
 					d->start();
 					delete d;
 					break;
@@ -66,12 +66,12 @@ int menu(Gui *g, Compiler *d) {
 							sleep(2);
 						}
 					} while (!test.is_open());
-					d = new Compiler(2, nome, g);
+					d = new Compiler(2 + (g->getEasterEgg() ? 3 : 0), nome, g);
 					d->start();
 					delete d;
 					break;
 				case '4':
-					g->helpWindow(printHelp() + string(PRESS_TO_CONTINUE));
+					g->helpWindow(printHelp(g->getEasterEgg()) + string(PRESS_TO_CONTINUE));
 					break;
 				case '0':
 					return 0;
@@ -82,6 +82,8 @@ int menu(Gui *g, Compiler *d) {
 					return -1;
 					break;
 			}
+		} else if (x == "paolo") {
+			g->setEasterEgg(true);
 		} else {
 			g->writeInvalid(SELECT, INVALID_INPUT, x);
 			sleep(2);
