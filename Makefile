@@ -4,7 +4,7 @@ NAME = pseudo
 CC = g++
 DBG = gdb
 
-CFLAGS = -Wall
+CFLAGS = -Wall -std=c++20
 INCLUDE = include
 SOURCE = src
 BIN = bin
@@ -33,11 +33,11 @@ default: build
 build:
 ifeq ($(wildcard $(BIN)/.*),)
 	@mkdir $(BIN)
-endif
 	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
 	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
+endif
 	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
-	@$(CC) *.o $(LIBRARIES) -o $(EXECUTABLE)
+	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
 	@echo [Makefile] Done
 
@@ -51,8 +51,10 @@ endif
 debug:
 ifeq ($(wildcard $(BIN)/.*),)
 	@mkdir $(BIN)
+	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
+	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
 endif
-	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.c
+	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
 	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
 
