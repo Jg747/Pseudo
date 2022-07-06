@@ -43,9 +43,9 @@ endif
 
 run:
 ifeq ($(OS), Windows_NT)
-	$(EXECUTABLE)
+	@$(EXECUTABLE)
 else
-	./$(EXECUTABLE)
+	@./$(EXECUTABLE)
 endif
 
 debug:
