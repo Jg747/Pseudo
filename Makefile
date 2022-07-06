@@ -20,7 +20,7 @@ ifeq ($(OS), Windows_NT)
 	DEST = C:\\Programs\\$(NAME)
 	EXECUTABLE = $(NAME).exe
 	MK = mingw32-make
-	OTHER = cparse/shunting-yard.cpp cparse/packToken.cpp cparse/functions.cpp cparse/containers.cpp
+	OTHER = cparse/shunting-yard.cpp cparse/packToken.cpp cparse/functions.cpp cparse/containers.cpp icons/resource.res
 else
 	DEST = /usr/local/bin
 	EXECUTABLE = $(NAME)
@@ -36,7 +36,15 @@ ifeq ($(wildcard $(BIN)/.*),)
 	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
 	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
 endif
+ifndef debug
 	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
+else
+ifeq ($(debug), true)
+	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.cpp
+else
+	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
+endif
+endif
 	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
 ifndef suppress
@@ -55,15 +63,7 @@ else
 endif
 
 debug:
-ifeq ($(wildcard $(BIN)/.*),)
-	@mkdir $(BIN)
-	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
-	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
-endif
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
-	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
-	@$(MV) *.o $(BIN)
-
+	@make build debug=true suppress=true
 ifeq ($(OS), Windows_NT)
 	@$(DBG) $(EXECUTABLE)
 else
