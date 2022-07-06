@@ -39,7 +39,13 @@ endif
 	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
 	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
 	@$(MV) *.o $(BIN)
+ifndef suppress
 	@echo [Makefile] Done
+else
+ifneq ($(suppress), true)
+	@echo [Makefile] Done
+endif
+endif
 
 run:
 ifeq ($(OS), Windows_NT)
@@ -74,7 +80,7 @@ endif
 	@echo [Makefile] Done
 
 clean:
-ifeq ($(wildcard $(BIN)/.*),)
+ifneq ($(wildcard $(BIN)/.*),)
 	@$(RM) $(EXECUTABLE)
 
 ifeq ($(OS), Windows_NT)
@@ -88,27 +94,34 @@ endif
 	@echo [Makefile] Done
 
 install:
+ifeq ($(shell id -u), 0)
+	@make build suppress=true
 ifeq ($(OS), Windows_NT)
 ifndef cmd
-	# Add to cmd
+# Add to cmd
 endif
-	# rest of the installation
+# rest of the installation
 else
 	@$(CP) ./$(EXECUTABLE) $(DEST)
 endif
 	@echo [Makefile] Installed
+else
+	@echo [Makefile] Root/Administrator required!
+endif
 
 remove:
-ifneq ($(wildcard $(DEST)/.*),)
+ifeq ($(wildcard $(DEST)/.*),)
+ifeq ($(shell id -u), 0)
+
 ifeq ($(OS), Windows_NT)
 	@$(RM) $(DEST) /q
 else
-ifneq ($(shell id -u), 0)
-	@echo [Makefile] Root mode required!
-else
 	@$(RM) $(DEST)/$(EXECUTABLE)
-	@echo [Makefile] Done
 endif
+	@echo [Makefile] Done
+
+else
+	@echo [Makefile] Root/Administrator required!
 endif
 else
 	@echo [Makefile] Program not installed
