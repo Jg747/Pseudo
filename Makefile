@@ -1,8 +1,8 @@
 NAME = pseudo
+EXT = cpp
 
 # Compilers: gcc, g++, clang, clang++
 CC = g++
-DBG = gdb
 
 CFLAGS = -Wall -std=c++20
 INCLUDE = include
@@ -21,11 +21,17 @@ ifeq ($(OS), Windows_NT)
 	EXECUTABLE = $(NAME).exe
 	MK = mingw32-make
 	OTHER = cparse/shunting-yard.cpp cparse/packToken.cpp cparse/functions.cpp cparse/containers.cpp icons/resource.res
+	DBG = gdb
 else
 	DEST = /usr/local/bin
 	EXECUTABLE = $(NAME)
 	MK = make
 	OTHER = $(BIN)/builtin-features.o $(BIN)/core-shunting-yard.o
+ifeq ($(shell uname -s), Darwin)
+	DBG = lldb
+else
+	DBG = gdb
+endif
 endif
 
 default: build
@@ -37,12 +43,12 @@ ifeq ($(wildcard $(BIN)/.*),)
 	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
 endif
 ifndef debug
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
+	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.$(EXT)
 else
 ifeq ($(debug), true)
-	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.cpp
+	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.$(EXT)
 else
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.cpp
+	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.$(EXT)
 endif
 endif
 	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
