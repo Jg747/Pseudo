@@ -6,9 +6,17 @@
 #include <limits>
 #include <cmath>
 
-#include <main.h>
 #include <structures.h>
 #include <errori.h>
+
+#ifdef _WIN32
+#include <cparse/shunting-yard.h>
+#include <cparse/shunting-yard-exceptions.h>
+#include <cparse/builtin-features.inc>
+#else
+#include <cparse/shunting-yard.h>
+#include <cparse/shunting-yard-exceptions.h>
+#endif
 
 using std::cout;
 using std::string;
