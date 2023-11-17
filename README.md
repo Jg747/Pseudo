@@ -11,7 +11,7 @@ It has three functions:
 To download and compile this program you must have g++ installed, then you can do the following commands
 
 ```
-git clone url
+git clone https://github.com/Jg747/Pseudo.git
 make
 ```
 

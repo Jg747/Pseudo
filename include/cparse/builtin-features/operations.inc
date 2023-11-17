@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstddef>
 
 namespace builtin_operations {
 
@@ -35,7 +36,7 @@ packToken Assign(const packToken& left, const packToken& right, evaluationData* 
   } else if (key->type & NUM) {
     if (origin->type == LIST) {
       TokenList& list = origin.asList();
-      size_t index = key.asInt();
+      size_t index = static_cast<size_t>(key.asInt());
       list[index] = right;
     } else {
       throw std::domain_error("Left operand of assignment is not a list!");
@@ -173,6 +174,15 @@ packToken NumeralOperation(const packToken& left, const packToken& right, evalua
     return left_i && right_i;
   } else if (op == "||") {
     return left_i || right_i;
+  // Added 2022-10-20 bignmllc
+  } else if (op == "&") {
+    return left_i & right_i;
+  // Added 2022-10-20 bignmllc
+  } else if (op == "^") {
+    return left_i ^ right_i;
+  // Added 2022-10-20 bignmllc
+  } else if (op == "|") {
+    return left_i | right_i;
   } else {
     throw undefined_operation(op, left, right);
   }
@@ -254,7 +264,7 @@ packToken StringOnNumberOperation(const packToken& p_left, const packToken& p_ri
     ss << left << p_right.asDouble();
     return ss.str();
   } else if (op == "[]") {
-    int64_t index = p_right.asInt();
+    ptrdiff_t index = static_cast<ptrdiff_t>(p_right.asInt());
 
     if (index < 0) {
       // Reverse index, i.e. list[-1] = list[list.size()-1]
@@ -288,7 +298,7 @@ packToken ListOnNumberOperation(const packToken& p_left, const packToken& p_righ
   TokenList left = p_left.asList();
 
   if (data->op == "[]") {
-    int64_t index = p_right.asInt();
+    ptrdiff_t index = static_cast<ptrdiff_t>(p_right.asInt());
 
     if (index < 0) {
       // Reverse index, i.e. list[-1] = list[list.size()-1]
@@ -301,7 +311,7 @@ packToken ListOnNumberOperation(const packToken& p_left, const packToken& p_righ
 
     packToken& value = left.list()[index];
 
-    return RefToken(index, value, p_left);
+    return RefToken(static_cast<int64_t>(index), value, p_left);
   } else {
     throw undefined_operation(data->op, p_left, p_right);
   }
@@ -332,18 +342,25 @@ struct Startup {
     // Create the operator precedence map based on C++ default
     // precedence order as described on cppreference website:
     // http://en.cppreference.com/w/cpp/language/operator_precedence
+    // Updated precedence numbers 2022-10-20 bignmllc
     OppMap_t& opp = calculator::Default().opPrecedence;
     opp.add("[]", 2); opp.add("()", 2); opp.add(".", 2);
     opp.add("**", 3);
     opp.add("*",  5); opp.add("/", 5); opp.add("%", 5);
     opp.add("+",  6); opp.add("-", 6);
     opp.add("<<", 7); opp.add(">>", 7);
-    opp.add("<",  8); opp.add("<=", 8); opp.add(">=", 8); opp.add(">", 8);
-    opp.add("==", 9); opp.add("!=", 9);
-    opp.add("&&", 13);
-    opp.add("||", 14);
-    opp.add("=", 15); opp.add(":", 15);
-    opp.add(",", 16);
+    opp.add("<",  9); opp.add("<=", 9); opp.add(">=", 9); opp.add(">", 9);
+    opp.add("==", 10); opp.add("!=", 10);
+    // Added 2022-10-20 bignmllc
+    opp.add("&", 11);
+    // Added 2022-10-20 bignmllc
+    opp.add("^", 12);
+    // Added 2022-10-20 bignmllc
+    opp.add("|", 13);
+    opp.add("&&", 14);
+    opp.add("||", 15);
+    opp.add("=", 16); opp.add(":", 16);
+    opp.add(",", 17);
 
     // Add unary operators:
     opp.addUnary("+",  3); opp.addUnary("-", 3); opp.addUnary("!", 3);

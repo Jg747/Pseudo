@@ -1,134 +1,172 @@
-NAME = pseudo
-EXT = cpp
+#########################################################
+# Project name
+NAME := pseudo
+APP_NAME := $(NAME)
+
+# Example: cpp, c ...
+EXT := cpp
 
 # Compilers: gcc, g++, clang, clang++
-CC = g++
-
-CFLAGS = -Wall -std=c++20
-INCLUDE = include
-SOURCE = src
-BIN = bin
+CC := g++
 
 # Example: -lncurses -lyaml ...
-LIBRARIES = -lncurses
+LIBRARIES := 
 
-RM = rm
-MV = mv
-CP = cp
+# Linker flags
+LFLAGS := 
 
-ifeq ($(OS), Windows_NT)
-	DEST = C:\\Programs\\$(NAME)
-	EXECUTABLE = $(NAME).exe
-	MK = mingw32-make
-	OTHER = cparse/shunting-yard.cpp cparse/packToken.cpp cparse/functions.cpp cparse/containers.cpp icons/resource.res
-	DBG = gdb
+# Compiler flags
+CFLAGS := -Wall -std=c++20
+
+# Debug flags
+DBFLAGS := -fstack-protector-all
+
+ifneq ($(OS), Windows_NT)
+# Install path (MacOS / Linux)
+DEST := /usr/local/bin
+# Other compilation extras, leave empty if nothing extra
+OTHER := 
+# Executable name & extension (or no extension)
+EXECUTABLE := $(APP_NAME)
 else
-	DEST = /usr/local/bin
-	EXECUTABLE = $(NAME)
-	MK = make
-	OTHER = $(BIN)/builtin-features.o $(BIN)/core-shunting-yard.o
-ifeq ($(shell uname -s), Darwin)
-	DBG = lldb
+# Install path (Windows)
+DEST := C:/Program Files/$(NAME)_pgm
+# Other compilation extras, leave empty if nothing extra
+OTHER := icons/resource.res
+# Executable name & extension (or no extension)
+EXECUTABLE := $(APP_NAME).exe
+endif
+
+INCLUDE := include
+SRC := src
+BIN := bin
+#########################################################
+
+LFLAGS += $(OTHER)
+LFLAGS += $(LIBRARIES)
+ifneq ($(OS), Windows_NT)
+	ifneq ($(shell uname -s), Darwin)
+#		LFLAGS += -static
+	endif
 else
-	DBG = gdb
+#	LFLAGS += -static
 endif
+CFLAGS += -I $(INCLUDE)
+
+DEBUG ?= false
+
+SRC_LIST := $(wildcard $(SRC)/*.$(EXT))
+OBJECTS := $(patsubst %.$(EXT),$(BIN)/%.o,$(SRC_LIST))
+OBJECTS := $(subst $(SRC)/,,$(OBJECTS))
+#OBJECTS += $(BIN)/builtin-features.o $(BIN)/containers.o $(BIN)/core-shunting-yard.o $(BIN)/functions.o $(BIN)/packToken.o $(BIN)/shunting-yard.o
+OBJECTS += $(BIN)/builtin-features.o $(BIN)/core-shunting-yard.o
+
+ifneq ($(OS), Windows_NT)
+RM := rm -r
+else
+RM := del /q
 endif
+RMDIR := rmdir
+CP := cp
 
 default: build
 
 build:
-ifeq ($(wildcard $(BIN)/.*),)
-	@mkdir $(BIN)
-	@cd $(INCLUDE)/cparse && $(MK) --no-print-directory
-	@$(MV) $(INCLUDE)/cparse/*.o $(BIN)
+ifeq ($(wildcard $(BIN)),)
+	mkdir $(BIN)
 endif
-ifndef debug
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.$(EXT)
-else
-ifeq ($(debug), true)
-	@$(CC) $(CFLAGS) -g -I $(INCLUDE) -c src/*.$(EXT)
-else
-	@$(CC) $(CFLAGS) -I $(INCLUDE) -c src/*.$(EXT)
-endif
-endif
-	@$(CC) *.o $(LIBRARIES) $(OTHER) -o $(EXECUTABLE)
-	@$(MV) *.o $(BIN)
-ifndef suppress
+	cd $(INCLUDE)/cparse && make
+	cp $(INCLUDE)/cparse/*.o $(BIN)
+	make $(BIN)/$(EXECUTABLE)
 	@echo [Makefile] Done
+
+$(BIN)/$(EXECUTABLE): $(OBJECTS) Makefile
+ifeq ($(DEBUG), false)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LFLAGS)
 else
-ifneq ($(suppress), true)
-	@echo [Makefile] Done
+	$(CC) $(CFLAGS) $(DBFLAGS) -g $(OBJECTS) -o $(EXECUTABLE) $(LFLAGS)
 endif
+
+$(BIN)/%.o: $(SRC)/%.$(EXT) | $(BIN)
+ifeq ($(DEBUG), false)
+	$(CC) $(CFLAGS) -MMD -MF $@.d -c $< -o $@
+else
+	$(CC) $(CFLAGS) -MMD -MF $@.d -g -c $< -o $@
 endif
+
+$(BIN):
+	mkdir $(BIN)
+
+-include $(BIN)/*.o.d
 
 run:
-ifeq ($(OS), Windows_NT)
-	@$(EXECUTABLE)
+ifneq ($(OS), Windows_NT)
+	./$(EXECUTABLE)
 else
-	@./$(EXECUTABLE)
+	$(EXECUTABLE)
 endif
 
-debug:
-	@make build debug=true suppress=true
-ifeq ($(OS), Windows_NT)
-	@$(DBG) $(EXECUTABLE)
-else
-	@$(DBG) ./$(EXECUTABLE)
-endif
+debug: 
+	$(MAKE) clean 
+	$(MAKE) build DEBUG=true
 
 setup:
-ifeq ($(wildcard $(SOURCE)/.*),)
-	@mkdir $(SOURCE)
+ifeq ($(wildcard $(SRC)/.*),)
+	mkdir $(SRC)
 endif
 ifeq ($(wildcard $(INCLUDE)/.*),)
-	@mkdir $(INCLUDE)
+	mkdir $(INCLUDE)
 endif
 	@echo [Makefile] Done
 
 clean:
-ifneq ($(wildcard $(BIN)/.*),)
-	@$(RM) $(EXECUTABLE)
-
-ifeq ($(OS), Windows_NT)
-	@$(RM) $(BIN)/* /q
-	@$(RMDIR) $(BIN) /q
-else
-	@$(RM) -r $(BIN)
-endif
-
-endif
+	cd $(INCLUDE)/cparse && make clean
+	rm -r $(BIN)
+	rm $(EXECUTABLE)
 	@echo [Makefile] Done
 
 install:
+ifneq ($(OS), Windows_NT)
+
 ifeq ($(shell id -u), 0)
-	@make build suppress=true
-ifeq ($(OS), Windows_NT)
-ifndef cmd
-# Add to cmd
-endif
-# rest of the installation
-else
-	@$(CP) ./$(EXECUTABLE) $(DEST)
-endif
+############# Install ###############
+	@make build
+	$(CP) ./$(EXECUTABLE) $(DEST)
 	@echo [Makefile] Installed
+############# Install ###############
 else
-	@echo [Makefile] Root/Administrator required!
+	@echo [Makefile] Root required!
+endif
+
+else
+############# Install ###############
+	@mkdir "$(DEST)"
+	@make build --no-print-directory
+	$(CP) $(EXECUTABLE) "$(DEST)"
+	@echo [Makefile] Installed
+############# Install ###############
 endif
 
 remove:
-ifeq ($(wildcard $(DEST)/.*),)
+ifneq ($(OS), Windows_NT)
+
 ifeq ($(shell id -u), 0)
-
-ifeq ($(OS), Windows_NT)
-	@$(RM) $(DEST) /q
-else
-	@$(RM) $(DEST)/$(EXECUTABLE)
-endif
-	@echo [Makefile] Done
-
-else
-	@echo [Makefile] Root/Administrator required!
-endif
+ifneq ($(wildcard $(DEST)/$(EXECUTABLE)),)
+############# Remove ###############
+	$(RM) $(DEST)/$(EXECUTABLE)
+	@echo [Makefile] Program removed!
+############# Remove ###############
 else
 	@echo [Makefile] Program not installed
+endif
+else
+	@echo [Makefile] Root required!
+endif
+
+else
+############# Remove ###############
+	$(RM) "$(DEST)" /q >nul
+	$(RMDIR) "$(DEST)" /q >nul
+	@echo [Makefile] Program removed!
+############# Remove ###############
 endif
