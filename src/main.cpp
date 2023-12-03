@@ -1,11 +1,20 @@
 #include <iostream>
+#include <vector>
+#include <string>
 
-#include "cparse/shunting-yard.h"
-#include "cparse/shunting-yard-exceptions.h"
+#include "program.hpp"
 
-using namespace cparse;
+//#include "cparse/shunting-yard.h"
+//#include "cparse/shunting-yard-exceptions.h"
 
 int main(int argc, char **argv) {
-    std::string test = std::string(argv[1]);
-    std::cout << calculator::calculate(test.c_str()) << std::endl;
+    try {
+        Program p(INTERPRETER, "test.txt");
+        p.read_file();
+        p.run_program();
+    } catch (std::runtime_error &e) {
+        std::cout << e.what();
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
