@@ -1,0 +1,55 @@
+BEGIN
+    x <- 5
+    y <- "ciao"
+    x <- x + 3
+    WRITE x, " come ", y, " te\n"
+    IF (x > 3) THEN
+        WRITE "if 1\n"
+    ENDIF
+    IF (x > 3) THEN
+        WRITE "if 2\n"
+    ELSE
+        WRITE "else dell'if 2\n"
+    ENDIF
+    IF (x > 3) THEN
+        WRITE "if 3\n"
+    ELIF (x > 4)
+        WRITE "elif dell'if 3\n"
+    ENDIF
+    IF (x > 3) THEN
+        WRITE "if 4\n"
+    ELIF (x > 4)
+        WRITE "elif 1 dell'if 4\n"
+    ELIF (x > 5)
+        WRITE "elif 2 dell'if 4\n"
+    ENDIF
+    IF (x > 3) THEN
+        WRITE "if 5\n"
+    ELIF (x > 4)
+        WRITE "elif 1 dell'if 5\n"
+    ELIF (x > 5)
+        WRITE "elif 2 dell'if 5\n"
+    ELSE
+        WRITE "else dell'if 5\n"
+    ENDIF
+    WHILE (x > 3)
+    x <- x - 1
+    ENDWHILE
+    SWITCH (x)
+    CASE 3:
+        x <- x + 1
+        WRITE "case 3\n"
+    CASE 4:
+        x <- x + 2
+        WRITE "case 4\n"
+    CASEDEFAULT:
+        x <- x + 3
+        WRITE "case default\n"
+    ENDSWITCH
+    x <- 2
+    REPEAT
+        x <- x - 1
+    UNTIL (x < 0)
+    READ input
+    WRITE "input: ", input, "\n"
+END
