@@ -13,7 +13,7 @@ private:
     std::string name;
     int start;
     int end;
-    std::unordered_map<std::string, Literal> variables;
+    std::unordered_map<std::string, std::unique_ptr<Literal>> variables;
     std::vector<Instruction> instructions;
     std::vector<Literal> params;
 

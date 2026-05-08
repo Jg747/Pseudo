@@ -10,11 +10,11 @@
 #include <utility>
 
 namespace interpreter {
-    std::string entry_point;
-    std::unordered_map<std::string, Function> functions;
-    std::unordered_map<std::string, Literal> global_variables;
+    static std::string entry_point;
+    static std::unordered_map<std::string, Function> functions;
+    static std::unordered_map<std::string, std::unique_ptr<Literal>> global_variables;
 
-    std::stack<std::pair<Function, Value>> call_stack;
+    static std::stack<std::pair<Function, std::unique_ptr<Value>>> call_stack;
 
     bool load_file(std::string filename);
     void execute();

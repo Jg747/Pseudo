@@ -22,7 +22,18 @@ It has three main capabilities:
       "stopAtEntry": true,
       "externalConsole": false,
       "MIMode": "gdb",
-      "preLaunchTask": "make debug"
+      "preLaunchTask": "make debug",
+      "setupCommands": [
+        {
+          "description": "Skip STL",
+          "text": "skip -gfi C:/msys64/*"
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

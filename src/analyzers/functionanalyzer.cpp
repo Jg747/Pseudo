@@ -1,10 +1,12 @@
 #ifndef __FUNCTIONANALYZER_HPP__
 #define __FUNCTIONANALYZER_HPP__
 
-#include "analyzer.hpp"
 #include "components/function.hpp"
+#include "analyzers/analyzer.hpp"
+#include "analyzers/functionanalyzer.hpp"
 
 #include <unordered_map>
+#include <string>
 
 class FunctionAnalyzer : public Analyzer {
 private:

@@ -1,0 +1,64 @@
+/* -------- LANG -------- */
+#ifndef __LANG_HPP__
+#define __LANG_HPP__
+
+enum class tokens_e {
+    BEGIN,
+    END,
+    IF,
+    THEN,
+    ELIF,
+    ELSE,
+    ENDIF,
+    WHILE,
+    ENDWHILE,
+    SWITCH,
+    CASE,
+    CASEDEFAULT,
+    ENDSWITCH,
+    REPEAT,
+    UNTIL,
+    READ,
+    WRITE,
+    ASSIGN,
+    FUNCTION,
+    RETURN,
+    OPERATOR,
+    EXPR_TOK,
+    VAR
+};
+
+#define BEGIN_STR                       "BEGIN"
+#define END_STR                         "END"
+#define IF_STR                          "IF"
+#define THEN_STR                        "THEN"
+#define ELIF_STR                        "ELIF"
+#define ELSE_STR                        "ELSE"
+#define ENDIF_STR                       "ENDIF"
+#define WHILE_STR                       "WHILE"
+#define ENDWHILE_STR                    "ENDWHILE"
+#define SWITCH_STR                      "SWITCH"
+#define CASE_STR                        "CASE"
+#define CASEDEFAULT_STR                 "CASEDEFAULT"
+#define ENDSWITCH_STR                   "ENDSWITCH"
+#define REPEAT_STR                      "REPEAT"
+#define UNTIL_STR                       "UNTIL"
+#define READ_STR                        "READ"
+#define WRITE_STR                       "WRITE"
+#define ASSIGN_STR                      "<-"
+#define FUNCTION_STR                    "FUNCTION"
+#define RETURN_STR                      "RETURN"
+
+#define ALLOWED_VARSFUNCS_CHARS         "^[A-Za-z_][A-Za-z_0-9]*$"
+#define ALLOWED_OPERATORS               "(<=)|(>=)|(==)|(!=)|[+\\-*\\/%<>=]"
+#define EXPR_CHARS                      "^(([0-9]+)|([0-9]+\\.[0-9]+))$"
+#define STRING_BRACKET_CHAR             "\""
+#define STRING_ESCAPE_CHAR              "\\"
+#define WRITE_SEPARATOR                 ","
+#define CASE_BEGIN                      ":"
+#define FUNC_START_ARGS                 "("
+#define FUNC_END_ARGS                   ")"
+#define COND_START_COND                 "("
+#define COND_END_COND                   ")"
+
+#endif // __LANG_HPP__
