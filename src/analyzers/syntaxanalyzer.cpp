@@ -14,12 +14,14 @@ shunting-yard
 #include <string>
 #include <vector>
 #include <regex>
+#include <memory>
 
 const char* SyntaxAnalyzer::whitespaces = " \n\t";
 const std::regex SyntaxAnalyzer::var_start_regex(ALLOWED_VARSFUNCS_CHARS);
 const std::regex SyntaxAnalyzer::allowed_operators(ALLOWED_OPERATORS);
 const std::regex SyntaxAnalyzer::expr_regex(EXPR_CHARS);
 std::unordered_map<std::string, tokens_e> SyntaxAnalyzer::keywords;
+
 
 
 SyntaxAnalyzer::SyntaxAnalyzer(std::string filename) : Analyzer(filename) {
@@ -50,20 +52,98 @@ void SyntaxAnalyzer::load_keywords() {
 }
 
 bool SyntaxAnalyzer::analyze() {
-    std::ifstream in(this->path);
-    std::string str;
+    in.open(this->path);
 
-    while (std::getline(in, str)) {
-        printf("%s\n", str.c_str());
-        if (!analyze_line(str)) {
-            in.close();
-            return false;
-        }
-        cur_line++;
+    cur_line = 0;
+    if (!get_next_line()) {
+        return false;
     }
 
     in.close();
     return true;
+}
+
+bool SyntaxAnalyzer::get_next_line() {
+    std::string str;
+    while (std::getline(in, str)) {
+        printf("%s\n", str.c_str());
+        cur_line++;
+        int ret = analyze_line(str);
+        if (ret == 0) {
+            in.close();
+            return false;
+        } else if (ret < 0) {
+            return true;
+        }
+    }
+    return true;
+}
+
+int SyntaxAnalyzer::analyze_line(std::string line) {
+    cur_tokens = tokenize_string(line);
+    cur_index = 0;
+    return analyze_tokens();
+}
+
+int SyntaxAnalyzer::analyze_tokens() {
+    while (cur_index < cur_tokens.size()) {
+        std::string token = cur_tokens[cur_index];
+        auto cur_tk = analyze_token(token);
+        
+        if (!cur_tk.has_value()) {
+            stop_interpreter("Unknown token");
+            return 0;
+        }
+
+        if (cur_tk.value() == tokens_e::VAR) {
+            if (var_flag) {
+                stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
+                return 0;
+            }
+            var_flag = true;
+            cur_index++;
+            continue;
+        }
+
+        SyntaxAnalyzer::add_instruction_ret ret = add_cur_instruction(cur_tk);
+        AssignationAnalyzer* assign = nullptr;
+
+        switch (ret) {
+            case SyntaxAnalyzer::add_instruction_ret::NO_TOKEN:
+                if (var_flag && (cur_instruction.empty() || !dynamic_cast<AssignationAnalyzer*>(cur_instruction.top().get()))) {
+                    stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
+                    return 0;
+                }
+                cur_index++;
+                break;
+            case SyntaxAnalyzer::add_instruction_ret::ERROR:
+                return 0;
+            case SyntaxAnalyzer::add_instruction_ret::NEXT:
+                assign = get_cur_instruction_top_ptr<AssignationAnalyzer>();
+                if (var_flag && !assign) {
+                    stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
+                    return 0;
+                }
+
+                cur_index++;
+                if (!analyze_instruction()) {
+                    return 0;
+                }
+                
+                if (!assign || pop_next_flag) {
+                    pop_next_flag = false;
+                    cur_instruction.pop();
+                }
+                break;
+            case SyntaxAnalyzer::add_instruction_ret::CALLBACK:
+                return -1;
+            default:
+                return 0;
+        }
+
+        var_flag = false;
+    }
+    return 1;
 }
 
 std::optional<tokens_e> SyntaxAnalyzer::analyze_token(std::string& token) {
@@ -89,23 +169,71 @@ bool SyntaxAnalyzer::get_var_flag() const {
     return var_flag;
 }
 
-bool SyntaxAnalyzer::analyze_instruction(std::vector<std::string>* tokens, std::size_t* index) {
-    cur_instruction->set_params(this, tokens, index);
-    return cur_instruction->analyze_syntax();
+bool SyntaxAnalyzer::end_tokens() const {
+    return cur_index >= cur_tokens.size();
 }
 
-bool SyntaxAnalyzer::set_cur_instruction(std::optional<tokens_e>& token) {
-    if (!token) {
-        return false;
+bool SyntaxAnalyzer::prev_instr_is_assign() {
+    return !cur_instruction.empty() && dynamic_cast<AssignationAnalyzer*>(cur_instruction.top().get());
+}
+
+void SyntaxAnalyzer::pop_next() {
+    pop_next_flag = true;
+}
+
+template<class T>
+T* SyntaxAnalyzer::get_cur_instruction_top_ptr() {
+    if (cur_instruction.empty()) {
+        return nullptr;
     }
+
+    return dynamic_cast<T*>(cur_instruction.top().get());
+}
+
+template<class T, class R>
+bool SyntaxAnalyzer::is_a(std::unique_ptr<T>& ptr) {
+    return dynamic_cast<R*>(ptr);
+}
+
+bool SyntaxAnalyzer::analyze_instruction() {
+    cur_instruction.top()->set_params(this, &cur_tokens, &cur_index);
+    return cur_instruction.top()->analyze_syntax();
+}
+
+SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::optional<tokens_e>& token) {
+    if (!token) {
+        return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
+    }
+
+    InstructionAnalyzer* a;
 
     switch (token.value()) {
         case tokens_e::ASSIGN:
-            cur_instruction = std::make_unique<AssignationAnalyzer>();
+            if (prev_instr_is_assign()) {
+                stop_interpreter("Unexpected other assignment token");
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            cur_instruction.push(std::make_unique<AssignationAnalyzer>());
+            break;
+        case tokens_e::REPEAT:
+            if (prev_instr_is_assign()) {
+                stop_interpreter("No assignation provided");
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            cur_instruction.push(std::make_unique<UntilAnalyzer>());
             break;
         case tokens_e::UNTIL:
-            cur_instruction = std::make_unique<UntilAnalyzer>();
-            break;
+            a = get_cur_instruction_top_ptr<UntilAnalyzer>();
+            if (!a) {
+                if (prev_instr_is_assign()) {
+                    stop_interpreter("No assignation provided");
+                } else {
+                    stop_interpreter(std::string(UNTIL_STR) + " token without starting " + std::string(REPEAT_STR) + " found");
+                }
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            ((UntilAnalyzer*) a)->next_state();
+            return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
         /*case tokens_e::WHILE:
             cur_instruction = std::make_unique<WhileAnalyzer>();
             break;
@@ -133,54 +261,9 @@ bool SyntaxAnalyzer::set_cur_instruction(std::optional<tokens_e>& token) {
         case tokens_e::RETURN:
             cur_instruction = std::make_unique<ReturnAnalyzer>();
             break;*/
-        default: return false;
+        default: return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
     }
-    return true;
-}
-
-bool SyntaxAnalyzer::analyze_line(std::string line) {
-    std::vector<std::string> tokens = tokenize_string(line);
-    std::size_t index = 0;
-
-    while (index < tokens.size()) {
-        std::string token = tokens[index];
-        auto cur_tk = analyze_token(token);
-        
-        if (!cur_tk.has_value()) {
-            stop_interpreter("Unknown token");
-            return false;
-        }
-
-        if (cur_tk.value() == tokens_e::VAR) {
-            if (var_flag) {
-                stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
-                return false;
-            }
-            var_flag = true;
-            index++;
-            continue;
-        }
-
-        if (set_cur_instruction(cur_tk)) {
-            if (var_flag && !dynamic_cast<AssignationAnalyzer*>(cur_instruction.get())) {
-                stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
-                return false;
-            }
-
-            if (!analyze_instruction(&tokens, &index)) {
-                return false;
-            }
-        } else {
-            if (var_flag && !dynamic_cast<AssignationAnalyzer*>(cur_instruction.get())) {
-                stop_interpreter("Assign operation error: need an assignation operator combined with a variable");
-                return false;
-            }
-            index++;
-        }
-
-        var_flag = false;
-    }
-    return true;
+    return SyntaxAnalyzer::add_instruction_ret::NEXT;
 }
 
 std::vector<std::string> SyntaxAnalyzer::tokenize_string(std::string string) {
@@ -207,11 +290,24 @@ void SyntaxAnalyzer::trim_string(std::string& string) {
     string = string.substr(start, end - start + 1);
 }
 
+bool SyntaxAnalyzer::is_keyword(std::string& token) {
+    for (auto [k, v] : keywords) {
+        if (k == token) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::string>* tokens, std::size_t* index) {
     this->tokens = tokens;
     this->cur_index = index;
     this->a = a;
 }
+
+void InstructionAnalyzer::next_state() {}
+
+void InstructionAnalyzer::init_state() {}
 
 
 
@@ -221,7 +317,6 @@ bool AssignationAnalyzer::analyze_syntax() {
         return false;
     }
 
-    (*cur_index)++;
     std::size_t entry_index = *cur_index;
     
     std::vector<std::string> expression;
@@ -252,22 +347,40 @@ bool AssignationAnalyzer::analyze_syntax() {
         a->stop_interpreter("Assignation error (expression evaluation failed)");
         return false;
     }
+    a->pop_next();
     return true;
 }
 
+
+
 bool UntilAnalyzer::analyze_syntax() {
-    UntilAnalyzer::states_e state = UntilAnalyzer::states_e::COND_START;
+    init_state();
+    if (!a->analyze_tokens()) {
+        return false;
+    }
+
+    if (a->end_tokens()) {
+        if (!a->get_next_line()) {
+            return false;
+        }
+    }
+
+    if (state != UntilAnalyzer::states_e::UNTIL) {
+        a->stop_interpreter("No " + std::string(UNTIL_STR) + " keyword found");
+        return false;
+    }
+    next_state();
+
     std::vector<std::string> expression;
 
     (*cur_index)++;
-
     if (tokens->at(*cur_index) == COND_START_COND) {
-        state = UntilAnalyzer::states_e::EXPR;
+        next_state();
     }
 
     if (state == UntilAnalyzer::states_e::COND_START) {
         if (tokens->at(*cur_index).find(COND_START_COND) == 0) {
-            state = UntilAnalyzer::states_e::EXPR;
+            next_state();
             expression.push_back(tokens->at(*cur_index).substr(1));
         }
     }
@@ -300,4 +413,27 @@ bool UntilAnalyzer::analyze_syntax() {
 
     a->stop_interpreter("Missing condition end ('" + std::string(COND_END_COND) + "')");
     return false;
+}
+
+void UntilAnalyzer::init_state() {
+    state = UntilAnalyzer::states_e::BODY;
+}
+
+void UntilAnalyzer::next_state() {
+    switch (state) {
+        case UntilAnalyzer::states_e::BODY:
+            state = UntilAnalyzer::states_e::UNTIL;
+            break;
+        case UntilAnalyzer::states_e::UNTIL:
+            state = UntilAnalyzer::states_e::COND_START;
+            break;
+        case UntilAnalyzer::states_e::COND_START:
+            state = UntilAnalyzer::states_e::EXPR;
+            break;
+        case UntilAnalyzer::states_e::EXPR:
+            state = UntilAnalyzer::states_e::COND_END;
+            break;
+        default:
+            break;
+    }
 }
