@@ -31,6 +31,7 @@ private:
 
     std::ifstream in;
     std::vector<std::string> cur_tokens;
+    std::stack<char> parenthesis;
     std::size_t cur_index;
     bool var_flag = false;
     bool pop_next_flag = false;
@@ -62,6 +63,7 @@ public:
 
     bool get_var_flag() const;
     bool end_tokens() const;
+    void pop_top();
     void pop_next();
 };
 
@@ -72,8 +74,11 @@ protected:
     SyntaxAnalyzer* a;
     std::vector<std::string>* tokens;
     std::size_t* cur_index;
+    bool begin;
 public:
     void set_params(SyntaxAnalyzer *a, std::vector<std::string>* tokens, std::size_t* index);
+    void set_begin();
+    static bool get_condition(SyntaxAnalyzer* a, std::size_t* cur_index, std::vector<std::string>* tokens, std::vector<std::string>& expression);
     virtual bool analyze_syntax() = 0;
     virtual void init_state();
     virtual void next_state();
@@ -94,12 +99,17 @@ public:
     void next_state() override;
 };
 
-/*class WhileAnalyzer : public InstructionAnalyzer {
+class WhileAnalyzer : public InstructionAnalyzer {
+private:
+    enum class states_e { COND_START, EXPR, COND_END, BODY_BEGIN, BODY_END };
+    WhileAnalyzer::states_e state;
 public:
     bool analyze_syntax() override;
+    void init_state() override;
+    void next_state() override;
 };
 
-class ForAnalyzer : public InstructionAnalyzer {
+/*class ForAnalyzer : public InstructionAnalyzer {
 public:
     bool analyze_syntax() override;
 };

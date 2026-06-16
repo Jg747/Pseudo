@@ -1,8 +1,13 @@
 BEGIN
-    REPEAT 
-        REPEAT
-            x <- 5
-            x <- <- 5
-        UNTIL (x > 5)
-    UNTIL (x < 3)
+    WHILE (x < 5)
+    BEGIN
+        WHILE (y < z)
+        BEGIN
+            y <- 1
+        END
+        WHILE (y < z)
+        BEGIN
+            y <- 1
+        END
+    END
 END
