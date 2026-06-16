@@ -109,27 +109,12 @@ public:
     void next_state() override;
 };
 
-/*class ForAnalyzer : public InstructionAnalyzer {
+/*class IfAnalyzer : public InstructionAnalyzer { // IF, ELSE, ELIF
 public:
     bool analyze_syntax() override;
 };
 
-class IfAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};
-
-class ElifAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};
-
-class SwitchAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};
-
-class CaseAnalyzer : public InstructionAnalyzer {
+class SwitchAnalyzer : public InstructionAnalyzer { // SWITCH, CASE
 public:
     bool analyze_syntax() override;
 };
@@ -145,11 +130,6 @@ public:
 };
 
 class FunctionSyntaxAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};
-
-class ReturnAnalyzer : public InstructionAnalyzer {
 public:
     bool analyze_syntax() override;
 };*/

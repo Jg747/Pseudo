@@ -96,7 +96,7 @@ int SyntaxAnalyzer::analyze_tokens() {
         auto cur_tk = analyze_token(token);
 
         if (!cur_tk.has_value()) {
-            stop_interpreter("Unknown token");
+            stop_interpreter("Unknown token (" + token + ")");
             return 0;
         }
 
@@ -340,6 +340,7 @@ bool SyntaxAnalyzer::is_keyword(std::string& token) {
     return false;
 }
 
+
 void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::string>* tokens, std::size_t* index) {
     this->tokens = tokens;
     this->cur_index = index;
@@ -406,7 +407,7 @@ bool AssignationAnalyzer::analyze_syntax() {
                     a->stop_interpreter("Assignation error (no value assigned)");
                     return false;
                 }
-                return true;
+                break;
             }
         } else {
             a->stop_interpreter("Assignation error (expression evaluation failed)");
@@ -426,7 +427,6 @@ bool AssignationAnalyzer::analyze_syntax() {
     a->pop_next();
     return true;
 }
-
 
 
 bool UntilAnalyzer::analyze_syntax() {
@@ -492,7 +492,6 @@ void UntilAnalyzer::next_state() {
 }
 
 
-
 bool WhileAnalyzer::analyze_syntax() {
     init_state();
     std::vector<std::string> expression;
@@ -518,17 +517,7 @@ bool WhileAnalyzer::analyze_syntax() {
     }
     next_state();
 
-    if (!a->end_tokens()) {
-        auto token = SyntaxAnalyzer::analyze_token(tokens->at(*cur_index));
-        (*cur_index)++;
-
-        if (token.has_value() && token == tokens_e::BEGIN) {
-            next_state();
-        } else {
-            a->stop_interpreter("need " + std::string(BEGIN_STR) + " after " + std::string(WHILE_STR) + " statement");
-            return false;
-        }
-        
+    while (!a->end_tokens()) {
         if (!a->analyze_tokens()) {
             return false;
         }
