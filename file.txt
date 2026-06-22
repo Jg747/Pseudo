@@ -1,9 +1,26 @@
 BEGIN
-    REPEAT 
-        WHILE (x < 5)
-        BEGIN
-            x <- 5
-            x <- 6
-        END
-    UNTIL (x < 6)
+    IF (x < 5) THEN
+        x <- 5
+    ENDIF
+    IF (x < 5) THEN
+        x <- 5
+    ELSE
+        x <- 6
+    ENDIF
+    IF (x < 5) THEN
+        x <- 5
+    ELIF (x < 6) THEN
+        x <- 6
+    ELIF (x < 7) THEN
+        x <- 7
+    ENDIF
+    IF (x < 5) THEN
+        x <- 5
+    ELIF (x < 6) THEN
+        x <- 6
+    ELIF (x < 7) THEN
+        x <- 7
+    ELSE
+        x <- 8
+    ENDIF
 END

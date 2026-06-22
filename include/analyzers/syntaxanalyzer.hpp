@@ -60,6 +60,7 @@ public:
     int analyze_line(std::string line);
     bool get_next_line();
     int analyze_tokens();
+    bool eof();
 
     bool get_var_flag() const;
     bool end_tokens() const;
@@ -81,7 +82,7 @@ public:
     static bool get_condition(SyntaxAnalyzer* a, std::size_t* cur_index, std::vector<std::string>* tokens, std::vector<std::string>& expression);
     virtual bool analyze_syntax() = 0;
     virtual void init_state();
-    virtual void next_state();
+    virtual bool next_state(tokens_e token);
 };
 
 class AssignationAnalyzer : public InstructionAnalyzer {
@@ -96,7 +97,7 @@ private:
 public:
     bool analyze_syntax() override;
     void init_state() override;
-    void next_state() override;
+    bool next_state(tokens_e token) override;
 };
 
 class WhileAnalyzer : public InstructionAnalyzer {
@@ -106,15 +107,23 @@ private:
 public:
     bool analyze_syntax() override;
     void init_state() override;
-    void next_state() override;
+    bool next_state(tokens_e token) override;
 };
 
-/*class IfAnalyzer : public InstructionAnalyzer { // IF, ELSE, ELIF
+class IfAnalyzer : public InstructionAnalyzer { // IF, ELSE, ELIF
+private:
+    enum class states_e { COND_START, EXPR, THEN, BODY, ELSE, ELIF, ENDIF };
+    IfAnalyzer::states_e state;
+    char section_type;
+    bool analyze_condition();
 public:
+    void set_section(char section);
     bool analyze_syntax() override;
+    void init_state() override;
+    bool next_state(tokens_e token) override;
 };
 
-class SwitchAnalyzer : public InstructionAnalyzer { // SWITCH, CASE
+/*class SwitchAnalyzer : public InstructionAnalyzer { // SWITCH, CASE
 public:
     bool analyze_syntax() override;
 };

@@ -25,7 +25,8 @@ enum class tokens_e {
     RETURN,
     OPERATOR,
     EXPR_TOK,
-    VAR
+    VAR,
+    NONE
 };
 
 #define BEGIN_STR                       "BEGIN"

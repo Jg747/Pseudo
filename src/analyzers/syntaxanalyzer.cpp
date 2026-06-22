@@ -136,11 +136,15 @@ int SyntaxAnalyzer::analyze_tokens() {
                 }
                 
                 if (!assign || pop_next_flag) {
-                    pop_next_flag = false;
-                    if (cur_instruction.size() > 0) {
-                        cur_instruction.pop();
-                        // TODO remove IF when functions done
+                    if (pop_next_flag) {
+                        if (cur_instruction.size() > 0) {
+                            cur_instruction.pop();
+                            // TODO remove IF when functions done
+                        } else {
+                            stop_interpreter("block ended without a start");
+                        }
                     }
+                    pop_next_flag = false;
                 }
                 break;
             case SyntaxAnalyzer::add_instruction_ret::CALLBACK:
@@ -231,7 +235,7 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
             if (cur_instruction.size() > 0) {
                 a = cur_instruction.top().get();
                 a->set_begin();
-                a->next_state();
+                a->next_state(token.value());
                 return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
             }
             break;
@@ -245,7 +249,7 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
 
             if (cur_instruction.size() > 0) {
                 a = cur_instruction.top().get();
-                a->next_state();
+                a->next_state(token.value());
                 return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
             }
             return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
@@ -273,18 +277,54 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
                 }
                 return SyntaxAnalyzer::add_instruction_ret::ERROR;
             }
-            ((UntilAnalyzer*) a)->next_state();
+            ((UntilAnalyzer*) a)->next_state(token.value());
             return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
         case tokens_e::WHILE:
             cur_instruction.push(std::make_unique<WhileAnalyzer>());
             break;
-        /*case tokens_e::IF:
-            cur_instruction = std::make_unique<IfAnalyzer>();
+        case tokens_e::IF:
+            cur_instruction.push(std::make_unique<IfAnalyzer>());
             break;
+        case tokens_e::THEN:
+            a = get_cur_instruction_top_ptr<IfAnalyzer>();
+            if (!a) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            if (!((IfAnalyzer*) a)->next_state(token.value())) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
+        case tokens_e::ELSE:
+            a = get_cur_instruction_top_ptr<IfAnalyzer>();
+            if (!a) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            ((IfAnalyzer*) a)->set_section(0);
+            if (!((IfAnalyzer*) a)->next_state(token.value())) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
         case tokens_e::ELIF:
-            cur_instruction = std::make_unique<ElifAnalyzer>();
-            break;
-        case tokens_e::SWITCH:
+            a = get_cur_instruction_top_ptr<IfAnalyzer>();
+            if (!a) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            ((IfAnalyzer*) a)->set_section(1);
+            if (!((IfAnalyzer*) a)->next_state(token.value())) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
+        case tokens_e::ENDIF:
+            a = get_cur_instruction_top_ptr<IfAnalyzer>();
+            if (!a) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            ((IfAnalyzer*) a)->set_section(-1);
+            if (!((IfAnalyzer*) a)->next_state(token.value())) {
+                return SyntaxAnalyzer::add_instruction_ret::ERROR;
+            }
+            return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
+        /*case tokens_e::SWITCH:
             cur_instruction = std::make_unique<SwitchAnalyzer>();
             break;
         case tokens_e::CASE:
@@ -340,6 +380,10 @@ bool SyntaxAnalyzer::is_keyword(std::string& token) {
     return false;
 }
 
+bool SyntaxAnalyzer::eof() {
+    return in.eof();
+}
+
 
 void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::string>* tokens, std::size_t* index) {
     this->tokens = tokens;
@@ -347,7 +391,7 @@ void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::string>
     this->a = a;
 }
 
-void InstructionAnalyzer::next_state() {}
+bool InstructionAnalyzer::next_state(tokens_e token) { return true; }
 
 void InstructionAnalyzer::init_state() {}
 
@@ -445,17 +489,17 @@ bool UntilAnalyzer::analyze_syntax() {
         a->stop_interpreter("No " + std::string(UNTIL_STR) + " keyword found");
         return false;
     }
-    next_state();
+    next_state(tokens_e::NONE);
 
     std::vector<std::string> expression;
 
     if (tokens->at(*cur_index) == COND_START_COND) {
-        next_state();
+        next_state(tokens_e::NONE);
     }
 
     if (state == UntilAnalyzer::states_e::COND_START) {
         if (tokens->at(*cur_index).find(COND_START_COND) == 0) {
-            next_state();
+            next_state(tokens_e::NONE);
             expression.push_back(tokens->at(*cur_index).substr(1));
         }
     }
@@ -472,7 +516,7 @@ void UntilAnalyzer::init_state() {
     state = UntilAnalyzer::states_e::BODY;
 }
 
-void UntilAnalyzer::next_state() {
+bool UntilAnalyzer::next_state(tokens_e token) {
     switch (state) {
         case UntilAnalyzer::states_e::BODY:
             state = UntilAnalyzer::states_e::UNTIL;
@@ -489,6 +533,7 @@ void UntilAnalyzer::next_state() {
         default:
             break;
     }
+    return true;
 }
 
 
@@ -497,12 +542,12 @@ bool WhileAnalyzer::analyze_syntax() {
     std::vector<std::string> expression;
 
     if (tokens->at(*cur_index) == COND_START_COND) {
-        next_state();
+        next_state(tokens_e::NONE);
     }
 
     if (state == WhileAnalyzer::states_e::COND_START) {
         if (tokens->at(*cur_index).find(COND_START_COND) == 0) {
-            next_state();
+            next_state(tokens_e::NONE);
             expression.push_back(tokens->at(*cur_index).substr(1));
         }
     }
@@ -515,7 +560,7 @@ bool WhileAnalyzer::analyze_syntax() {
     if (!InstructionAnalyzer::get_condition(a, cur_index, tokens, expression)) {
         return false;
     }
-    next_state();
+    next_state(tokens_e::NONE);
 
     while (!a->end_tokens()) {
         if (!a->analyze_tokens()) {
@@ -560,7 +605,7 @@ void WhileAnalyzer::init_state() {
     state = WhileAnalyzer::states_e::COND_START;
 }
 
-void WhileAnalyzer::next_state() {
+bool WhileAnalyzer::next_state(tokens_e token) {
     switch (state) {
         case WhileAnalyzer::states_e::COND_START:
             state = WhileAnalyzer::states_e::EXPR;
@@ -577,4 +622,129 @@ void WhileAnalyzer::next_state() {
         default:
             break;
     }
+    return true;
+}
+
+
+
+bool IfAnalyzer::analyze_syntax() {
+    init_state();
+    
+    if (!analyze_condition()) {
+        return false;
+    }
+
+    while (!a->end_tokens()) {
+        if (!a->analyze_tokens()) {
+            return false;
+        }
+
+        if (section_type == -1) {
+            a->pop_next();
+            return true;
+        }
+    }
+
+    do {
+        if (!a->get_next_line()) {
+            return false;
+        }
+
+        while (!a->end_tokens()) {
+            if (!a->analyze_tokens()) {
+                return false;
+            }
+
+            if (section_type == -1) {
+                a->pop_next();
+                return true;
+            }
+        }
+
+        if (section_type == -1) {
+            a->pop_next();
+            return true;
+        }
+    } while (!a->eof());
+    return false;
+}
+
+void IfAnalyzer::init_state() {
+    state = IfAnalyzer::states_e::COND_START;
+}
+
+bool IfAnalyzer::next_state(tokens_e token) {
+    switch (state) {
+        case IfAnalyzer::states_e::COND_START:
+            state = IfAnalyzer::states_e::EXPR;
+            break;
+        case IfAnalyzer::states_e::EXPR:
+            state = IfAnalyzer::states_e::THEN;
+            break;
+        case IfAnalyzer::states_e::THEN:
+            if (token != tokens_e::THEN) {
+                a->stop_interpreter("missing " + std::string(THEN_STR) + " token");
+                return false;
+            }
+            state = IfAnalyzer::states_e::BODY;
+            break;
+        case IfAnalyzer::states_e::BODY:
+            if (section_type > 0) {
+                state = IfAnalyzer::states_e::COND_START; // elif
+                (*cur_index)++;
+                if (!analyze_condition()) {
+                    return false;
+                }
+                (*cur_index)--;
+            } else if (section_type == 0) {
+                state = IfAnalyzer::states_e::ELSE;
+            } else {
+                if (token != tokens_e::ENDIF) {
+                    a->stop_interpreter("missing " + std::string(ENDIF_STR) + " token");
+                    return false;
+                }
+                state = IfAnalyzer::states_e::ENDIF;
+            }
+            break;
+        case IfAnalyzer::states_e::ELSE:
+            if (token != tokens_e::ENDIF) {
+                a->stop_interpreter("missing " + std::string(ENDIF_STR) + " token");
+                return false;
+            }
+            state = IfAnalyzer::states_e::ENDIF;
+            break;
+        default:
+            break;
+    }
+    return true;
+}
+
+void IfAnalyzer::set_section(char section) {
+    section_type = section;
+}
+
+bool IfAnalyzer::analyze_condition() {
+    std::vector<std::string> expression;
+
+    if (tokens->at(*cur_index) == COND_START_COND) {
+        next_state(tokens_e::NONE);
+    }
+
+    if (state == IfAnalyzer::states_e::COND_START) {
+        if (tokens->at(*cur_index).find(COND_START_COND) == 0) {
+            next_state(tokens_e::NONE);
+            expression.push_back(tokens->at(*cur_index).substr(1));
+        }
+    }
+
+    if (state != IfAnalyzer::states_e::EXPR) {
+        a->stop_interpreter("Missing condition start ('" + std::string(COND_START_COND) + "')");
+        return false;
+    }
+
+    if (!InstructionAnalyzer::get_condition(a, cur_index, tokens, expression)) {
+        return false;
+    }
+    next_state(tokens_e::NONE);
+    return true;
 }
