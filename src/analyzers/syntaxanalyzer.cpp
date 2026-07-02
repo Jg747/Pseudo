@@ -38,10 +38,6 @@ void SyntaxAnalyzer::load_keywords() {
     keywords.insert({ std::string(ENDIF_STR), tokens_e::ENDIF });
     keywords.insert({ std::string(WHILE_STR), tokens_e::WHILE });
     keywords.insert({ std::string(ENDWHILE_STR), tokens_e::ENDWHILE });
-    keywords.insert({ std::string(SWITCH_STR), tokens_e::SWITCH });
-    keywords.insert({ std::string(CASE_STR), tokens_e::CASE });
-    keywords.insert({ std::string(CASEDEFAULT_STR), tokens_e::CASEDEFAULT });
-    keywords.insert({ std::string(ENDSWITCH_STR), tokens_e::ENDSWITCH });
     keywords.insert({ std::string(REPEAT_STR), tokens_e::REPEAT });
     keywords.insert({ std::string(UNTIL_STR), tokens_e::UNTIL });
     keywords.insert({ std::string(READ_STR), tokens_e::READ });
@@ -85,6 +81,7 @@ bool SyntaxAnalyzer::get_next_line() {
 }
 
 int SyntaxAnalyzer::analyze_line(std::string line) {
+    _cur_line = line;
     cur_tokens = tokenize_string(line);
     cur_index = 0;
     return analyze_tokens();
@@ -324,17 +321,11 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
                 return SyntaxAnalyzer::add_instruction_ret::ERROR;
             }
             return SyntaxAnalyzer::add_instruction_ret::CALLBACK;
-        /*case tokens_e::SWITCH:
-            cur_instruction = std::make_unique<SwitchAnalyzer>();
-            break;
-        case tokens_e::CASE:
-            cur_instruction = std::make_unique<CaseAnalyzer>();
-            break;
-        case tokens_e::READ:
-            cur_instruction = std::make_unique<ReadAnalyzer>();
-            break;
         case tokens_e::WRITE:
-            cur_instruction = std::make_unique<WriteAnalyzer>();
+            cur_instruction.push(std::make_unique<WriteAnalyzer>());
+            break;
+        /*case tokens_e::READ:
+            cur_instruction = std::make_unique<ReadAnalyzer>();
             break;
         case tokens_e::FUNCTION:
             cur_instruction = std::make_unique<FunctionSyntaxAnalyzer>();
@@ -384,6 +375,10 @@ bool SyntaxAnalyzer::eof() {
     return in.eof();
 }
 
+std::string SyntaxAnalyzer::get_cur_line() {
+    return _cur_line;
+}
+
 
 void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::string>* tokens, std::size_t* index) {
     this->tokens = tokens;
@@ -405,7 +400,7 @@ bool InstructionAnalyzer::get_condition(SyntaxAnalyzer* a, std::size_t* cur_inde
     while (*cur_index < tokens->size()) {
         std::string token = tokens->at(*cur_index);
         if (token.ends_with(COND_END_COND)) {
-            if (token != COND_END_COND) {
+            if (token != std::string(1, COND_END_COND)) {
                 token = token.substr(0, token.find_last_of(COND_END_COND));
                 expression.push_back(token);
             }
@@ -421,7 +416,7 @@ bool InstructionAnalyzer::get_condition(SyntaxAnalyzer* a, std::size_t* cur_inde
         (*cur_index)++;
     }
 
-    a->stop_interpreter("Missing condition end ('" + std::string(COND_END_COND) + "')");
+    a->stop_interpreter("Missing condition end ('" + std::string(1, COND_END_COND) + "')");
     return false;
 }
 
@@ -493,7 +488,7 @@ bool UntilAnalyzer::analyze_syntax() {
 
     std::vector<std::string> expression;
 
-    if (tokens->at(*cur_index) == COND_START_COND) {
+    if (tokens->at(*cur_index)[0] == COND_START_COND) {
         next_state(tokens_e::NONE);
     }
 
@@ -505,7 +500,7 @@ bool UntilAnalyzer::analyze_syntax() {
     }
 
     if (state != UntilAnalyzer::states_e::EXPR) {
-        a->stop_interpreter("Missing condition start ('" + std::string(COND_START_COND) + "')");
+        a->stop_interpreter("Missing condition start ('" + std::string(1, COND_START_COND) + "')");
         return false;
     }
 
@@ -541,7 +536,7 @@ bool WhileAnalyzer::analyze_syntax() {
     init_state();
     std::vector<std::string> expression;
 
-    if (tokens->at(*cur_index) == COND_START_COND) {
+    if (tokens->at(*cur_index)[0] == COND_START_COND) {
         next_state(tokens_e::NONE);
     }
 
@@ -553,7 +548,7 @@ bool WhileAnalyzer::analyze_syntax() {
     }
 
     if (state != WhileAnalyzer::states_e::EXPR) {
-        a->stop_interpreter("Missing condition start ('" + std::string(COND_START_COND) + "')");
+        a->stop_interpreter("Missing condition start ('" + std::string(1, COND_START_COND) + "')");
         return false;
     }
 
@@ -655,13 +650,13 @@ bool IfAnalyzer::analyze_syntax() {
                 return false;
             }
 
-            if (section_type == -1) {
+            if (state == IfAnalyzer::states_e::ENDIF) {
                 a->pop_next();
                 return true;
             }
         }
 
-        if (section_type == -1) {
+        if (state == IfAnalyzer::states_e::ENDIF) {
             a->pop_next();
             return true;
         }
@@ -671,6 +666,7 @@ bool IfAnalyzer::analyze_syntax() {
 
 void IfAnalyzer::init_state() {
     state = IfAnalyzer::states_e::COND_START;
+    section_type = -2;
 }
 
 bool IfAnalyzer::next_state(tokens_e token) {
@@ -689,6 +685,10 @@ bool IfAnalyzer::next_state(tokens_e token) {
             state = IfAnalyzer::states_e::BODY;
             break;
         case IfAnalyzer::states_e::BODY:
+            if (section_type == -2) {
+                a->stop_interpreter("incomplete statement");
+                return false;
+            }
             if (section_type > 0) {
                 state = IfAnalyzer::states_e::COND_START; // elif
                 (*cur_index)++;
@@ -705,6 +705,7 @@ bool IfAnalyzer::next_state(tokens_e token) {
                 }
                 state = IfAnalyzer::states_e::ENDIF;
             }
+            section_type = -2;
             break;
         case IfAnalyzer::states_e::ELSE:
             if (token != tokens_e::ENDIF) {
@@ -726,7 +727,7 @@ void IfAnalyzer::set_section(char section) {
 bool IfAnalyzer::analyze_condition() {
     std::vector<std::string> expression;
 
-    if (tokens->at(*cur_index) == COND_START_COND) {
+    if (tokens->at(*cur_index)[0] == COND_START_COND) {
         next_state(tokens_e::NONE);
     }
 
@@ -738,7 +739,7 @@ bool IfAnalyzer::analyze_condition() {
     }
 
     if (state != IfAnalyzer::states_e::EXPR) {
-        a->stop_interpreter("Missing condition start ('" + std::string(COND_START_COND) + "')");
+        a->stop_interpreter("Missing condition start ('" + std::string(1, COND_START_COND) + "')");
         return false;
     }
 
@@ -747,4 +748,158 @@ bool IfAnalyzer::analyze_condition() {
     }
     next_state(tokens_e::NONE);
     return true;
+}
+
+
+
+#define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
+#define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(WRITE_STR) + "'")
+bool WriteAnalyzer::analyze_syntax() {
+    std::string line = a->get_cur_line();
+    line = line.substr(line.find_first_of(WRITE_STR) + std::string(WRITE_STR).length());
+
+    std::size_t i = 0;
+    bool is_closed = false;
+    bool first_arg = true;
+    bool space = false;
+
+    i = 0;
+    while (i < line.size() && std::isspace(line[i])) {
+        if (!space && std::isspace(line[i])) {
+            space = true;
+        }
+        i++;
+    }
+
+    if (space) {
+        (*cur_index)++;
+        space = false;
+    }
+
+    if (i >= line.size()) {
+        a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
+        return false;
+    }
+
+    while (i < line.size()) {
+        if (!first_arg) {
+            if (line[i] != WRITE_SEPARATOR) {
+                a->stop_interpreter(WRITE_SYNTAX_ERROR);
+                return false;
+            }
+
+            for (i += 1; i < line.size() && std::isspace(line[i]); i++) {
+                if (!space && std::isspace(line[i])) {
+                    space = true;
+                }
+            }
+
+            if (space) {
+                (*cur_index)++;
+                space = false;
+            }
+
+            if (i >= line.size()) {
+                a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
+                return false;
+            }
+        }
+
+        first_arg = false;
+
+        if (line[i] == STRING_BRACKET_CHAR) {
+            is_closed = false;
+            i++;
+            std::string literal;
+
+            while (i < line.size()) {
+                if (!space && std::isspace(line[i])) {
+                    space = true;
+                }
+
+                if (line[i] == STRING_ESCAPE_CHAR && i + 1 < line.size()) {
+                    literal += line[i + 1];
+                    i += 2;
+                    if (space) {
+                        (*cur_index)++;
+                        space = false;
+                    }
+                } else if (line[i] == STRING_BRACKET_CHAR) {
+                    is_closed = true;
+                    i++;
+                    if (space) {
+                        (*cur_index)++;
+                        space = false;
+                    }
+                    break;
+                } else {
+                    literal += line[i];
+                    i++;
+                    if (space) {
+                        (*cur_index)++;
+                        space = false;
+                    }
+                }
+            }
+
+            if (space) {
+                (*cur_index)++;
+                space = false;
+            }
+
+            if (!is_closed) {
+                a->stop_interpreter(WRITE_SYNTAX_ERROR);
+                return false;
+            }
+
+            literals.push_back(literal);
+        } else {
+            std::string var;
+
+            for (; i < line.size() && line[i] != WRITE_SEPARATOR && !std::isspace(line[i]); i++) {
+                if (!space && std::isspace(line[i])) {
+                    space = true;
+                }
+                var += line[i];
+            }
+
+            if (space) {
+                (*cur_index)++;
+                space = false;
+            }
+
+            if (var.empty()) {
+                a->stop_interpreter("no argument provided after " + std::string(1, WRITE_SEPARATOR));
+                return false;
+            }
+            
+            if (var.ends_with(STRING_BRACKET_CHAR)) {
+                a->stop_interpreter(WRITE_SYNTAX_ERROR);
+                return false;
+            }
+
+            vars.push_back(var);
+        }
+    }
+
+    printf("literals\n");
+    for (auto& s : literals) {
+        printf("- '%s'\n", s.c_str());
+    }
+    printf("vars\n");
+    for (auto& s : vars) {
+        printf("- '%s'\n", s.c_str());
+    }
+
+    return true;
+}
+
+bool WriteAnalyzer::analyze_token(std::string& token) {
+    return false;
+}
+
+void WriteAnalyzer::init_state() {}
+
+bool WriteAnalyzer::next_state(tokens_e token) {
+    return false;
 }

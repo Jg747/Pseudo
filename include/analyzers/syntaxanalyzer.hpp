@@ -31,6 +31,7 @@ private:
 
     std::ifstream in;
     std::vector<std::string> cur_tokens;
+    std::string _cur_line;
     std::stack<char> parenthesis;
     std::size_t cur_index;
     bool var_flag = false;
@@ -64,6 +65,7 @@ public:
 
     bool get_var_flag() const;
     bool end_tokens() const;
+    std::string get_cur_line();
     void pop_top();
     void pop_next();
 };
@@ -123,17 +125,20 @@ public:
     bool next_state(tokens_e token) override;
 };
 
-/*class SwitchAnalyzer : public InstructionAnalyzer { // SWITCH, CASE
-public:
-    bool analyze_syntax() override;
-};
-
-class ReadAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};
-
 class WriteAnalyzer : public InstructionAnalyzer {
+private:
+    // aggiungere una union per capire se è una var o un literal e fare merge dei vector per eseguire la stampa senza mantenere separati
+    std::vector<std::string> literals;
+    std::vector<std::string> vars;
+
+    bool analyze_token(std::string& token);
+public:
+    bool analyze_syntax() override;
+    void init_state() override;
+    bool next_state(tokens_e token) override;
+};
+
+/*class ReadAnalyzer : public InstructionAnalyzer {
 public:
     bool analyze_syntax() override;
 };

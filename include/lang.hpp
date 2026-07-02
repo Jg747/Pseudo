@@ -12,10 +12,6 @@ enum class tokens_e {
     ENDIF,
     WHILE,
     ENDWHILE,
-    SWITCH,
-    CASE,
-    CASEDEFAULT,
-    ENDSWITCH,
     REPEAT,
     UNTIL,
     READ,
@@ -38,14 +34,10 @@ enum class tokens_e {
 #define ENDIF_STR                       "ENDIF"
 #define WHILE_STR                       "WHILE"
 #define ENDWHILE_STR                    "ENDWHILE"
-#define SWITCH_STR                      "SWITCH"
-#define CASE_STR                        "CASE"
-#define CASEDEFAULT_STR                 "CASEDEFAULT"
-#define ENDSWITCH_STR                   "ENDSWITCH"
 #define REPEAT_STR                      "REPEAT"
 #define UNTIL_STR                       "UNTIL"
-#define READ_STR                        "READ"
-#define WRITE_STR                       "WRITE"
+#define READ_STR                        "read"
+#define WRITE_STR                       "write"
 #define ASSIGN_STR                      "<-"
 #define FUNCTION_STR                    "FUNCTION"
 #define RETURN_STR                      "RETURN"
@@ -53,13 +45,12 @@ enum class tokens_e {
 #define ALLOWED_VARSFUNCS_CHARS         "^[A-Za-z_][A-Za-z_0-9]*$"
 #define ALLOWED_OPERATORS               "(<=)|(>=)|(==)|(!=)|[+\\-*\\/%<>=]"
 #define EXPR_CHARS                      "^(([0-9]+)|([0-9]+\\.[0-9]+))$"
-#define STRING_BRACKET_CHAR             "\""
-#define STRING_ESCAPE_CHAR              "\\"
-#define WRITE_SEPARATOR                 ","
-#define CASE_BEGIN                      ":"
-#define FUNC_START_ARGS                 "("
-#define FUNC_END_ARGS                   ")"
-#define COND_START_COND                 "("
-#define COND_END_COND                   ")"
+#define STRING_BRACKET_CHAR             '\"'
+#define STRING_ESCAPE_CHAR              '\\'
+#define WRITE_SEPARATOR                 ','
+#define FUNC_START_ARGS                 '('
+#define FUNC_END_ARGS                   ')'
+#define COND_START_COND                 '('
+#define COND_END_COND                   ')'
 
 #endif // __LANG_HPP__
