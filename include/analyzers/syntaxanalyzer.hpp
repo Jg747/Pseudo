@@ -130,20 +130,22 @@ private:
     // aggiungere una union per capire se è una var o un literal e fare merge dei vector per eseguire la stampa senza mantenere separati
     std::vector<std::string> literals;
     std::vector<std::string> vars;
-
-    bool analyze_token(std::string& token);
 public:
     bool analyze_syntax() override;
     void init_state() override;
     bool next_state(tokens_e token) override;
 };
 
-/*class ReadAnalyzer : public InstructionAnalyzer {
+class ReadAnalyzer : public InstructionAnalyzer {
+private:
+    std::vector<std::string> vars;
 public:
     bool analyze_syntax() override;
+    void init_state() override;
+    bool next_state(tokens_e token) override;
 };
 
-class FunctionSyntaxAnalyzer : public InstructionAnalyzer {
+/*class FunctionSyntaxAnalyzer : public InstructionAnalyzer {
 public:
     bool analyze_syntax() override;
 };*/

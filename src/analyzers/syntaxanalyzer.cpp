@@ -324,10 +324,10 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
         case tokens_e::WRITE:
             cur_instruction.push(std::make_unique<WriteAnalyzer>());
             break;
-        /*case tokens_e::READ:
-            cur_instruction = std::make_unique<ReadAnalyzer>();
+        case tokens_e::READ:
+            cur_instruction.push(std::make_unique<ReadAnalyzer>());
             break;
-        case tokens_e::FUNCTION:
+        /*case tokens_e::FUNCTION:
             cur_instruction = std::make_unique<FunctionSyntaxAnalyzer>();
             break;
         case tokens_e::RETURN:
@@ -753,7 +753,8 @@ bool IfAnalyzer::analyze_condition() {
 
 
 #define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
-#define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(WRITE_STR) + "'")
+#define WRITE_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(WRITE_STR) + "'")
+#define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, WRITE_SEPARATOR) + "'")
 bool WriteAnalyzer::analyze_syntax() {
     std::string line = a->get_cur_line();
     line = line.substr(line.find_first_of(WRITE_STR) + std::string(WRITE_STR).length());
@@ -777,7 +778,7 @@ bool WriteAnalyzer::analyze_syntax() {
     }
 
     if (i >= line.size()) {
-        a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
+        a->stop_interpreter(WRITE_SYNTAX_NO_ARG);
         return false;
     }
 
@@ -869,7 +870,7 @@ bool WriteAnalyzer::analyze_syntax() {
             }
 
             if (var.empty()) {
-                a->stop_interpreter("no argument provided after " + std::string(1, WRITE_SEPARATOR));
+                a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
                 return false;
             }
             
@@ -878,15 +879,21 @@ bool WriteAnalyzer::analyze_syntax() {
                 return false;
             }
 
+            if (false) {
+                // check var name
+                a->stop_interpreter(WRITE_SYNTAX_ERROR);
+                return false;
+            }
+
             vars.push_back(var);
         }
     }
 
-    printf("literals\n");
+    printf("write literals\n");
     for (auto& s : literals) {
         printf("- '%s'\n", s.c_str());
     }
-    printf("vars\n");
+    printf("write vars\n");
     for (auto& s : vars) {
         printf("- '%s'\n", s.c_str());
     }
@@ -894,12 +901,106 @@ bool WriteAnalyzer::analyze_syntax() {
     return true;
 }
 
-bool WriteAnalyzer::analyze_token(std::string& token) {
-    return false;
-}
-
 void WriteAnalyzer::init_state() {}
 
 bool WriteAnalyzer::next_state(tokens_e token) {
+    return false;
+}
+
+
+#define READ_SYNTAX_ERROR ("sytanx is '" + std::string(READ_STR) + " <variable>" + std::string(1, READ_SEPARATOR) + " <variable>" + std::string(1, READ_SEPARATOR) + " ...'")
+#define READ_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(READ_STR) + "'")
+#define READ_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, READ_SEPARATOR) + "'")
+bool ReadAnalyzer::analyze_syntax() {
+    std::string line = a->get_cur_line();
+    line = line.substr(line.find_first_of(READ_STR) + std::string(READ_STR).length());
+
+    std::size_t i = 0;
+    bool first_arg = true;
+    bool space = false;
+
+    i = 0;
+    while (i < line.size() && std::isspace(line[i])) {
+        if (!space && std::isspace(line[i])) {
+            space = true;
+        }
+        i++;
+    }
+
+    if (space) {
+        (*cur_index)++;
+        space = false;
+    }
+
+    if (i >= line.size()) {
+        a->stop_interpreter(READ_SYNTAX_NO_ARG);
+        return false;
+    }
+
+    while (i < line.size()) {
+        if (!first_arg) {
+            if (line[i] != READ_SEPARATOR) {
+                a->stop_interpreter(READ_SYNTAX_ERROR);
+                return false;
+            }
+
+            for (i += 1; i < line.size() && std::isspace(line[i]); i++) {
+                if (!space && std::isspace(line[i])) {
+                    space = true;
+                }
+            }
+
+            if (space) {
+                (*cur_index)++;
+                space = false;
+            }
+
+            if (i >= line.size()) {
+                a->stop_interpreter(READ_SYNTAX_COMMA_ERROR);
+                return false;
+            }
+        }
+
+        first_arg = false;
+
+        std::string var;
+
+        for (; i < line.size() && line[i] != READ_SEPARATOR && !std::isspace(line[i]); i++) {
+            if (!space && std::isspace(line[i])) {
+                space = true;
+            }
+            var += line[i];
+        }
+
+        if (space) {
+            (*cur_index)++;
+            space = false;
+        }
+
+        if (var.empty()) {
+            a->stop_interpreter(READ_SYNTAX_COMMA_ERROR);
+            return false;
+        }
+            
+        if (false) {
+            // check var name
+            a->stop_interpreter(READ_SYNTAX_ERROR);
+            return false;
+        }
+
+        vars.push_back(var);
+    }
+    
+    printf("read vars\n");
+    for (auto& s : vars) {
+        printf("- '%s'\n", s.c_str());
+    }
+
+    return true;
+}
+
+void ReadAnalyzer::init_state() {}
+
+bool ReadAnalyzer::next_state(tokens_e token) {
     return false;
 }
