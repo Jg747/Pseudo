@@ -2,7 +2,7 @@
 #define __FUNCTION_HPP__
 
 #include "instructions/instruction.hpp"
-#include "literals/literal.hpp"
+#include "literals/variable.hpp"
 
 #include <string>
 #include <vector>
@@ -13,22 +13,22 @@ private:
     std::string name;
     int start;
     int end;
-    std::unordered_map<std::string, std::unique_ptr<Literal>> variables;
+    std::unordered_map<std::string, std::unique_ptr<Variable>> variables;
     std::vector<Instruction> instructions;
-    std::vector<Literal> params;
+    std::vector<Variable> params;
 
 public:
     Function();
-    Function(std::vector<Literal>& params);
+    Function(std::vector<Variable>& params);
 
-    void set_params(std::vector<Literal>& params);
-    std::vector<Literal>& get_params() const;
+    void set_params(std::vector<Variable>& params);
+    std::vector<Variable>& get_params() const;
 
     std::vector<Instruction>& get_instructions() const;
     void add_instruction(Instruction& i);
 
-    std::unordered_map<std::string, Literal>& get_variables() const;
-    void add_variable(Literal& l);
+    std::unordered_map<std::string, Variable>& get_variables() const;
+    void add_variable(Variable& l);
 
     void execute();
 };

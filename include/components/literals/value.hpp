@@ -10,13 +10,18 @@ protected:
 
 public:
     Value();
+    Value(const Value& val);
     Value(std::string value);
     Value(int value);
     Value(float value);
     Value(double value);
     virtual ~Value();
 
-    virtual void abstract() = 0;
+    virtual void set_value(std::string& val);
+    virtual void set_value(Value& val);
+    std::string get_value() const;
+
+    virtual std::unique_ptr<Value> clone() const = 0;
 };
 
 #endif // __VALUE_HPP__

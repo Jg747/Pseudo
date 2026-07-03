@@ -1,7 +1,7 @@
 #ifndef __CONDITION_HPP__
 #define __CONDITION_HPP__
 
-#include "literals/literal.hpp"
+#include "components/literals/variable.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -11,9 +11,9 @@
 class Condition {
 private:
     std::string expression;
-    std::unordered_map<std::string, Literal> scope_variables;
+    std::unordered_map<std::string, Variable> scope_variables;
 public:
-    Condition(std::string expression, const std::unordered_map<std::string, Literal>& scope_variables);
+    Condition(std::string expression, const std::unordered_map<std::string, Variable>& scope_variables);
     bool test_condition() const;
 
     operator bool() const;

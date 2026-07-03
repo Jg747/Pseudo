@@ -12,7 +12,7 @@ LIB_DIR = libs
 OBJ_DIR = bin
 
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -I$(INC_DIR)
+CXXFLAGS = -std=c++23 -Wall -I$(INC_DIR)
 LDFLAGS = -L$(LIB_DIR)
 LDLIBS =
 

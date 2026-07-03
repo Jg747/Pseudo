@@ -43,7 +43,7 @@ enum class tokens_e {
 #define RETURN_STR                      "RETURN"
 
 #define ALLOWED_VARSFUNCS_CHARS         "^[A-Za-z_][A-Za-z_0-9]*$"
-#define ALLOWED_OPERATORS               "(<=)|(>=)|(==)|(!=)|[+\\-*\\/%<>=]"
+#define ALLOWED_OPERATORS               "^(<=)$|^(>=)$|^(==)$|^(!=)$|^([\\+\\-\\*\\/\\%<>])$|^(\\[[0-9]+\\])$|^(\\^)$|^(\\$)$|^(\\?)$" // arr^x add x, arr$index remove, arr? arr_size
 #define EXPR_CHARS                      "^(([0-9]+)|([0-9]+\\.[0-9]+))$"
 #define STRING_BRACKET_CHAR             '\"'
 #define STRING_ESCAPE_CHAR              '\\'
@@ -55,3 +55,4 @@ enum class tokens_e {
 #define COND_END_COND                   ')'
 
 #endif // __LANG_HPP__
+//^(<=)|(>=)|(==)|(!=)|([\+\-\*\/\%<>])|(\[[0-9]+\])|(\^)|(\$)|(\?)$

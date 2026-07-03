@@ -1,3 +1,4 @@
 BEGIN
-    read var1, var2
+    v <- x [ciao]
+    // fix variable regex for operator
 END
