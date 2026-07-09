@@ -16,6 +16,8 @@ private:
     
     std::vector<std::unique_ptr<Value>> values;
 public:
+    static bool is_name_correct(std::string name);
+
     Variable();
     Variable(std::string& name);
     Variable(std::string& name, Value& val);

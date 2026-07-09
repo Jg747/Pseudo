@@ -9,6 +9,7 @@ shunting-yard
 #include "analyzers/syntaxanalyzer.hpp"
 #include "lang.hpp"
 #include "expr.hpp"
+#include "components/literals/variable.hpp"
 
 #include <fstream>
 #include <string>
@@ -327,10 +328,10 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
         case tokens_e::READ:
             cur_instruction.push(std::make_unique<ReadAnalyzer>());
             break;
-        /*case tokens_e::FUNCTION:
-            cur_instruction = std::make_unique<FunctionSyntaxAnalyzer>();
-            break;
-        case tokens_e::RETURN:
+        case tokens_e::FUNCTION:
+            stop_interpreter("no '" + std::string(FUNCTION_STR) + "' allowed in body");
+            return SyntaxAnalyzer::add_instruction_ret::ERROR;
+        /*case tokens_e::RETURN:
             cur_instruction = std::make_unique<ReturnAnalyzer>();
             break;*/
         default: return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
@@ -426,6 +427,8 @@ bool AssignationAnalyzer::analyze_syntax() {
         a->stop_interpreter("Assignation error (need a variable to assign to)");
         return false;
     }
+
+    // TODO DA RIFARE
 
     std::size_t entry_index = *cur_index;
     
@@ -853,7 +856,7 @@ bool WriteAnalyzer::analyze_syntax() {
                 return false;
             }
 
-            literals.push_back(literal);
+            literals.push_back({ .lit = literal, .is_variable = false });
         } else {
             std::string var;
 
@@ -879,23 +882,18 @@ bool WriteAnalyzer::analyze_syntax() {
                 return false;
             }
 
-            if (false) {
-                // check var name
-                a->stop_interpreter(WRITE_SYNTAX_ERROR);
+            if (!Variable::is_name_correct(var)) {
+                a->stop_interpreter("'" + var + "' is not a valid variable name");
                 return false;
             }
 
-            vars.push_back(var);
+            literals.push_back({ .lit = var, .is_variable = true });
         }
     }
 
     printf("write literals\n");
     for (auto& s : literals) {
-        printf("- '%s'\n", s.c_str());
-    }
-    printf("write vars\n");
-    for (auto& s : vars) {
-        printf("- '%s'\n", s.c_str());
+        printf("[%d] '%s'\n", s.is_variable, s.lit.c_str());
     }
 
     return true;
@@ -982,9 +980,8 @@ bool ReadAnalyzer::analyze_syntax() {
             return false;
         }
             
-        if (false) {
-            // check var name
-            a->stop_interpreter(READ_SYNTAX_ERROR);
+        if (!Variable::is_name_correct(var)) {
+            a->stop_interpreter("'" + var + "' is not a valid variable name");
             return false;
         }
 

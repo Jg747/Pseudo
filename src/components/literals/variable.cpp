@@ -1,10 +1,12 @@
 #include "components/literals/variable.hpp"
 #include "components/literals/value.hpp"
+#include "lang.hpp"
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <exception>
+#include <regex>
 
 Variable::Variable() {
     id = global_id;
@@ -80,4 +82,9 @@ void Variable::remove_value(int idx) {
 
 int Variable::get_length() {
     return values.size();
+}
+
+bool Variable::is_name_correct(std::string name) {
+    std::regex reg(ALLOWED_VARSFUNCS_CHARS);
+    return std::regex_match(name, reg);
 }

@@ -15,6 +15,11 @@
 #include <fstream>
 #include <stack>
 
+typedef struct {
+    std::string lit;
+    bool is_variable;
+} write_literal;
+
 class InstructionAnalyzer;
 
 class SyntaxAnalyzer : public Analyzer {
@@ -128,8 +133,7 @@ public:
 class WriteAnalyzer : public InstructionAnalyzer {
 private:
     // aggiungere una union per capire se è una var o un literal e fare merge dei vector per eseguire la stampa senza mantenere separati
-    std::vector<std::string> literals;
-    std::vector<std::string> vars;
+    std::vector<write_literal> literals;
 public:
     bool analyze_syntax() override;
     void init_state() override;

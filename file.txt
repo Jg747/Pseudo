@@ -1,4 +1,3 @@
 BEGIN
-    v <- x [ciao]
-    // fix variable regex for operator
+    x <- x+y+z
 END
