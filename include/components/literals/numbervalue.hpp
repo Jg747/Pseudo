@@ -36,126 +36,147 @@ public:
     static NumberValue div(Value& val1, Value& val2);
     static NumberValue mod(Value& val1, Value& val2);
 
-    friend NumberValue operator+(NumberValue& val1, NumberValue& val2);
-    friend NumberValue operator-(NumberValue& val1, NumberValue& val2);
-    friend NumberValue operator*(NumberValue& val1, NumberValue& val2);
-    friend NumberValue operator/(NumberValue& val1, NumberValue& val2);
-    friend NumberValue operator%(NumberValue& val1, NumberValue& val2);
+    friend NumberValue operator+(NumberValue val1, NumberValue val2);
+    friend NumberValue operator-(NumberValue val1, NumberValue val2);
+    friend NumberValue operator*(NumberValue val1, NumberValue val2);
+    friend NumberValue operator/(NumberValue val1, NumberValue val2);
+    friend NumberValue operator%(NumberValue val1, NumberValue val2);
 
-    friend NumberValue operator+(Value& val1, NumberValue& val2);
-    friend NumberValue operator-(Value& val1, NumberValue& val2);
-    friend NumberValue operator*(Value& val1, NumberValue& val2);
-    friend NumberValue operator/(Value& val1, NumberValue& val2);
-    friend NumberValue operator%(Value& val1, NumberValue& val2);
+    friend NumberValue operator+(Value* val1, NumberValue val2);
+    friend NumberValue operator-(Value* val1, NumberValue val2);
+    friend NumberValue operator*(Value* val1, NumberValue val2);
+    friend NumberValue operator/(Value* val1, NumberValue val2);
+    friend NumberValue operator%(Value* val1, NumberValue val2);
 
-    friend NumberValue operator+(NumberValue& val1, Value& val2);
-    friend NumberValue operator-(NumberValue& val1, Value& val2);
-    friend NumberValue operator*(NumberValue& val1, Value& val2);
-    friend NumberValue operator/(NumberValue& val1, Value& val2);
-    friend NumberValue operator%(NumberValue& val1, Value& val2);
+    friend NumberValue operator+(NumberValue val1, Value* val2);
+    friend NumberValue operator-(NumberValue val1, Value* val2);
+    friend NumberValue operator*(NumberValue val1, Value* val2);
+    friend NumberValue operator/(NumberValue val1, Value* val2);
+    friend NumberValue operator%(NumberValue val1, Value* val2);
 
-    friend NumberValue operator+(std::string val1, NumberValue& val2);
-    friend NumberValue operator-(std::string val1, NumberValue& val2);
-    friend NumberValue operator*(std::string val1, NumberValue& val2);
-    friend NumberValue operator/(std::string val1, NumberValue& val2);
-    friend NumberValue operator%(std::string val1, NumberValue& val2);
+    friend NumberValue operator+(std::string val1, NumberValue val2);
+    friend NumberValue operator-(std::string val1, NumberValue val2);
+    friend NumberValue operator*(std::string val1, NumberValue val2);
+    friend NumberValue operator/(std::string val1, NumberValue val2);
+    friend NumberValue operator%(std::string val1, NumberValue val2);
 
-    friend NumberValue operator+(NumberValue& val1, std::string val2);
-    friend NumberValue operator-(NumberValue& val1, std::string val2);
-    friend NumberValue operator*(NumberValue& val1, std::string val2);
-    friend NumberValue operator/(NumberValue& val1, std::string val2);
-    friend NumberValue operator%(NumberValue& val1, std::string val2);
+    friend NumberValue operator+(NumberValue val1, std::string val2);
+    friend NumberValue operator-(NumberValue val1, std::string val2);
+    friend NumberValue operator*(NumberValue val1, std::string val2);
+    friend NumberValue operator/(NumberValue val1, std::string val2);
+    friend NumberValue operator%(NumberValue val1, std::string val2);
 
-    friend NumberValue operator+(NumberValue& val1, int val2);
-    friend NumberValue operator-(NumberValue& val1, int val2);
-    friend NumberValue operator*(NumberValue& val1, int val2);
-    friend NumberValue operator/(NumberValue& val1, int val2);
-    friend NumberValue operator%(NumberValue& val1, int val2);
+    friend NumberValue operator+(NumberValue val1, int val2);
+    friend NumberValue operator-(NumberValue val1, int val2);
+    friend NumberValue operator*(NumberValue val1, int val2);
+    friend NumberValue operator/(NumberValue val1, int val2);
+    friend NumberValue operator%(NumberValue val1, int val2);
 
-    friend NumberValue operator+(int val1, NumberValue& val2);
-    friend NumberValue operator-(int val1, NumberValue& val2);
-    friend NumberValue operator*(int val1, NumberValue& val2);
-    friend NumberValue operator/(int val1, NumberValue& val2);
-    friend NumberValue operator%(int val1, NumberValue& val2);
+    friend NumberValue operator+(int val1, NumberValue val2);
+    friend NumberValue operator-(int val1, NumberValue val2);
+    friend NumberValue operator*(int val1, NumberValue val2);
+    friend NumberValue operator/(int val1, NumberValue val2);
+    friend NumberValue operator%(int val1, NumberValue val2);
 
-    friend NumberValue operator+(NumberValue& val1, double val2);
-    friend NumberValue operator-(NumberValue& val1, double val2);
-    friend NumberValue operator*(NumberValue& val1, double val2);
-    friend NumberValue operator/(NumberValue& val1, double val2);
-    friend NumberValue operator%(NumberValue& val1, double val2);
+    friend NumberValue operator+(NumberValue val1, double val2);
+    friend NumberValue operator-(NumberValue val1, double val2);
+    friend NumberValue operator*(NumberValue val1, double val2);
+    friend NumberValue operator/(NumberValue val1, double val2);
+    friend NumberValue operator%(NumberValue val1, double val2);
 
-    friend NumberValue operator+(double val1, NumberValue& val2);
-    friend NumberValue operator-(double val1, NumberValue& val2);
-    friend NumberValue operator*(double val1, NumberValue& val2);
-    friend NumberValue operator/(double val1, NumberValue& val2);
-    friend NumberValue operator%(double val1, NumberValue& val2);
+    friend NumberValue operator+(double val1, NumberValue val2);
+    friend NumberValue operator-(double val1, NumberValue val2);
+    friend NumberValue operator*(double val1, NumberValue val2);
+    friend NumberValue operator/(double val1, NumberValue val2);
+    friend NumberValue operator%(double val1, NumberValue val2);
 
-    friend bool operator<(NumberValue& val1, NumberValue& val2);
-    friend bool operator>(NumberValue& val1, NumberValue& val2);
-    friend bool operator<=(NumberValue& val1, NumberValue& val2);
-    friend bool operator>=(NumberValue& val1, NumberValue& val2);
-    friend bool operator==(NumberValue& val1, NumberValue& val2);
-    friend bool operator!=(NumberValue& val1, NumberValue& val2);
+    friend NumberValue operator<(NumberValue val1, NumberValue val2);
+    friend NumberValue operator>(NumberValue val1, NumberValue val2);
+    friend NumberValue operator<=(NumberValue val1, NumberValue val2);
+    friend NumberValue operator>=(NumberValue val1, NumberValue val2);
+    friend NumberValue operator==(NumberValue val1, NumberValue val2);
+    friend NumberValue operator!=(NumberValue val1, NumberValue val2);
 
-    friend bool operator<(Value& val1, NumberValue& val2);
-    friend bool operator>(Value& val1, NumberValue& val2);
-    friend bool operator<=(Value& val1, NumberValue& val2);
-    friend bool operator>=(Value& val1, NumberValue& val2);
-    friend bool operator==(Value& val1, NumberValue& val2);
-    friend bool operator!=(Value& val1, NumberValue& val2);
+    friend NumberValue operator<(Value* val1, NumberValue val2);
+    friend NumberValue operator>(Value* val1, NumberValue val2);
+    friend NumberValue operator<=(Value* val1, NumberValue val2);
+    friend NumberValue operator>=(Value* val1, NumberValue val2);
+    friend NumberValue operator==(Value* val1, NumberValue val2);
+    friend NumberValue operator!=(Value* val1, NumberValue val2);
 
-    friend bool operator<(NumberValue& val1, Value& val2);
-    friend bool operator>(NumberValue& val1, Value& val2);
-    friend bool operator<=(NumberValue& val1, Value& val2);
-    friend bool operator>=(NumberValue& val1, Value& val2);
-    friend bool operator==(NumberValue& val1, Value& val2);
-    friend bool operator!=(NumberValue& val1, Value& val2);
+    friend NumberValue operator<(NumberValue val1, Value* val2);
+    friend NumberValue operator>(NumberValue val1, Value* val2);
+    friend NumberValue operator<=(NumberValue val1, Value* val2);
+    friend NumberValue operator>=(NumberValue val1, Value* val2);
+    friend NumberValue operator==(NumberValue val1, Value* val2);
+    friend NumberValue operator!=(NumberValue val1, Value* val2);
 
-    friend bool operator<(NumberValue& val1, std::string val2);
-    friend bool operator>(NumberValue& val1, std::string val2);
-    friend bool operator<=(NumberValue& val1, std::string val2);
-    friend bool operator>=(NumberValue& val1, std::string val2);
-    friend bool operator==(NumberValue& val1, std::string val2);
-    friend bool operator!=(NumberValue& val1, std::string val2);
+    friend NumberValue operator<(NumberValue val1, std::string val2);
+    friend NumberValue operator>(NumberValue val1, std::string val2);
+    friend NumberValue operator<=(NumberValue val1, std::string val2);
+    friend NumberValue operator>=(NumberValue val1, std::string val2);
+    friend NumberValue operator==(NumberValue val1, std::string val2);
+    friend NumberValue operator!=(NumberValue val1, std::string val2);
 
-    friend bool operator<(std::string val1, NumberValue& val2);
-    friend bool operator>(std::string val1, NumberValue& val2);
-    friend bool operator<=(std::string val1, NumberValue& val2);
-    friend bool operator>=(std::string val1, NumberValue& val2);
-    friend bool operator==(std::string val1, NumberValue& val2);
-    friend bool operator!=(std::string val1, NumberValue& val2);
+    friend NumberValue operator<(std::string val1, NumberValue val2);
+    friend NumberValue operator>(std::string val1, NumberValue val2);
+    friend NumberValue operator<=(std::string val1, NumberValue val2);
+    friend NumberValue operator>=(std::string val1, NumberValue val2);
+    friend NumberValue operator==(std::string val1, NumberValue val2);
+    friend NumberValue operator!=(std::string val1, NumberValue val2);
 
-    friend bool operator<(NumberValue& val1, int val2);
-    friend bool operator>(NumberValue& val1, int val2);
-    friend bool operator<=(NumberValue& val1, int val2);
-    friend bool operator>=(NumberValue& val1, int val2);
-    friend bool operator==(NumberValue& val1, int val2);
-    friend bool operator!=(NumberValue& val1, int val2);
+    friend NumberValue operator<(NumberValue val1, int val2);
+    friend NumberValue operator>(NumberValue val1, int val2);
+    friend NumberValue operator<=(NumberValue val1, int val2);
+    friend NumberValue operator>=(NumberValue val1, int val2);
+    friend NumberValue operator==(NumberValue val1, int val2);
+    friend NumberValue operator!=(NumberValue val1, int val2);
 
-    friend bool operator<(int val1, NumberValue& val2);
-    friend bool operator>(int val1, NumberValue& val2);
-    friend bool operator<=(int val1, NumberValue& val2);
-    friend bool operator>=(int val1, NumberValue& val2);
-    friend bool operator==(int val1, NumberValue& val2);
-    friend bool operator!=(int val1, NumberValue& val2);
+    friend NumberValue operator<(int val1, NumberValue val2);
+    friend NumberValue operator>(int val1, NumberValue val2);
+    friend NumberValue operator<=(int val1, NumberValue val2);
+    friend NumberValue operator>=(int val1, NumberValue val2);
+    friend NumberValue operator==(int val1, NumberValue val2);
+    friend NumberValue operator!=(int val1, NumberValue val2);
 
-    friend bool operator<(NumberValue& val1, double val2);
-    friend bool operator>(NumberValue& val1, double val2);
-    friend bool operator<=(NumberValue& val1, double val2);
-    friend bool operator>=(NumberValue& val1, double val2);
-    friend bool operator==(NumberValue& val1, double val2);
-    friend bool operator!=(NumberValue& val1, double val2);
+    friend NumberValue operator<(NumberValue val1, double val2);
+    friend NumberValue operator>(NumberValue val1, double val2);
+    friend NumberValue operator<=(NumberValue val1, double val2);
+    friend NumberValue operator>=(NumberValue val1, double val2);
+    friend NumberValue operator==(NumberValue val1, double val2);
+    friend NumberValue operator!=(NumberValue val1, double val2);
 
-    friend bool operator<(double val1, NumberValue& val2);
-    friend bool operator>(double val1, NumberValue& val2);
-    friend bool operator<=(double val1, NumberValue& val2);
-    friend bool operator>=(double val1, NumberValue& val2);
-    friend bool operator==(double val1, NumberValue& val2);
-    friend bool operator!=(double val1, NumberValue& val2);
+    friend NumberValue operator<(double val1, NumberValue val2);
+    friend NumberValue operator>(double val1, NumberValue val2);
+    friend NumberValue operator<=(double val1, NumberValue val2);
+    friend NumberValue operator>=(double val1, NumberValue val2);
+    friend NumberValue operator==(double val1, NumberValue val2);
+    friend NumberValue operator!=(double val1, NumberValue val2);
+
+    friend NumberValue operator&&(NumberValue val1, NumberValue val2);
+    friend NumberValue operator&&(Value* val1, NumberValue val2);
+    friend NumberValue operator&&(NumberValue val1, Value* val2);
+    friend NumberValue operator&&(std::string val1, NumberValue val2);
+    friend NumberValue operator&&(NumberValue val1, std::string val2);
+    friend NumberValue operator&&(NumberValue val1, int val2);
+    friend NumberValue operator&&(int val1, NumberValue val2);
+    friend NumberValue operator&&(NumberValue val1, double val2);
+    friend NumberValue operator&&(double val1, NumberValue val2);
+
+    friend NumberValue operator||(NumberValue val1, NumberValue val2);
+    friend NumberValue operator||(Value* val1, NumberValue val2);
+    friend NumberValue operator||(NumberValue val1, Value* val2);
+    friend NumberValue operator||(std::string val1, NumberValue val2);
+    friend NumberValue operator||(NumberValue val1, std::string val2);
+    friend NumberValue operator||(NumberValue val1, int val2);
+    friend NumberValue operator||(int val1, NumberValue val2);
+    friend NumberValue operator||(NumberValue val1, double val2);
+    friend NumberValue operator||(double val1, NumberValue val2);
 
     NumberValue& operator=(Value& val);
 
     operator StringValue() const;
+    operator bool() const;
 
     virtual std::unique_ptr<Value> clone() const override;
 };

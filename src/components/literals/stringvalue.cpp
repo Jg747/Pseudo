@@ -66,212 +66,218 @@ StringValue StringValue::subst(Value& val, int start, int count, std::string str
     return StringValue(ret);
 }
 
-StringValue operator+(StringValue& val1, StringValue& val2) {
+StringValue operator+(StringValue val1, StringValue val2) {
     return StringValue::concat(val1, val2);
 }
 
-StringValue operator+(StringValue& val1, std::string val2) {
+StringValue operator+(StringValue val1, std::string val2) {
     return StringValue::concat(val1, val2);
 }
 
-StringValue operator+(std::string val1, StringValue& val2) {
+StringValue operator+(std::string val1, StringValue val2) {
     return StringValue::concat(val1, val2);
 }
 
-StringValue operator+(StringValue& val1, Value& val2) {
-    return StringValue::concat(val1, val2);
+StringValue operator+(StringValue val1, Value* val2) {
+    return StringValue::concat(val1, *val2);
 }
 
-StringValue operator+(Value& val1, StringValue& val2) {
-    return StringValue::concat(val1, val2);
+StringValue operator+(Value* val1, StringValue val2) {
+    return StringValue::concat(*val1, val2);
 }
 
-bool operator<(StringValue& val1, StringValue& val2) {
+NumberValue operator<(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return s1.compare(s2) < 0;
+    return NumberValue(s1.compare(s2) < 0);
 }
 
-bool operator>(StringValue& val1, StringValue& val2) {
+NumberValue operator>(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return s1.compare(s2) > 0;
+    return NumberValue(s1.compare(s2) > 0);
 }
 
-bool operator<=(StringValue& val1, StringValue& val2) {
+NumberValue operator<=(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return s1.compare(s2) <= 0;
+    return NumberValue(s1.compare(s2) <= 0);
 }
 
-bool operator>=(StringValue& val1, StringValue& val2) {
+NumberValue operator>=(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return s1.compare(s2) >= 0;
+    return NumberValue(s1.compare(s2) >= 0);
 }
 
-bool operator==(StringValue& val1, StringValue& val2) {
+NumberValue operator==(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return !s1.compare(s2);
+    return NumberValue(!s1.compare(s2));
 }
 
-bool operator!=(StringValue& val1, StringValue& val2) {
+NumberValue operator!=(StringValue val1, StringValue val2) {
     std::string s1 = val1.get_value();
     std::string s2 = val2.get_value();
-    return s1.compare(s2);
+    return NumberValue(s1.compare(s2));
 }
 
-bool operator<(StringValue& val1, Value& val2) {
+NumberValue operator<(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 < v2;
 }
 
-bool operator>(StringValue& val1, Value& val2) {
+NumberValue operator>(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 > v2;
 }
 
-bool operator<=(StringValue& val1, Value& val2) {
+NumberValue operator<=(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 <= v2;
 }
 
-bool operator>=(StringValue& val1, Value& val2) {
+NumberValue operator>=(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 >= v2;
 }
 
-bool operator==(StringValue& val1, Value& val2) {
+NumberValue operator==(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 == v2;
 }
 
-bool operator!=(StringValue& val1, Value& val2) {
+NumberValue operator!=(StringValue val1, Value* val2) {
     StringValue v1 = val1;
-    StringValue v2 = (StringValue) val2;
+    StringValue v2 = (StringValue) *val2;
     return v1 != v2;
 }
 
-bool operator<(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 < v2;
-}
-
-bool operator>(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 > v2;
-}
-
-bool operator<=(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 <= v2;
-}
-
-bool operator>=(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 >= v2;
-}
-
-bool operator==(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 == v2;
-}
-
-bool operator!=(Value& val1, StringValue& val2) {
-    StringValue v1 = (StringValue) val1;
-    StringValue v2 = val2;
-    return v1 != v2;
-}
-
-bool operator<(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 < v2;
-}
-
-bool operator>(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 > v2;
-}
-
-bool operator<=(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 <= v2;
-}
-
-bool operator>=(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 >= v2;
-}
-
-bool operator==(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 == v2;
-}
-
-bool operator!=(StringValue& val1, std::string val2) {
-    StringValue v1 = val1;
-    StringValue v2(val2);
-    return v1 != v2;
-}
-
-
-bool operator<(std::string val1, StringValue& val2) {
-    StringValue v1(val1);
+NumberValue operator<(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
     StringValue v2 = val2;
     return v1 < v2;
 }
 
-bool operator>(std::string val1, StringValue& val2) {
+NumberValue operator>(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 > v2;
+}
+
+NumberValue operator<=(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 <= v2;
+}
+
+NumberValue operator>=(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 >= v2;
+}
+
+NumberValue operator==(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 == v2;
+}
+
+NumberValue operator!=(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 != v2;
+}
+
+NumberValue operator<(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 < v2;
+}
+
+NumberValue operator>(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 > v2;
+}
+
+NumberValue operator<=(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 <= v2;
+}
+
+NumberValue operator>=(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 >= v2;
+}
+
+NumberValue operator==(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 == v2;
+}
+
+NumberValue operator!=(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2(val2);
+    return v1 != v2;
+}
+
+
+NumberValue operator<(std::string val1, StringValue val2) {
+    StringValue v1(val1);
+    StringValue v2 = val2;
+    return v1 < v2;
+}
+
+NumberValue operator>(std::string val1, StringValue val2) {
     StringValue v1(val1);
     StringValue v2 = val2;
     return v1 > v2;
 }
 
-bool operator<=(std::string val1, StringValue& val2) {
+NumberValue operator<=(std::string val1, StringValue val2) {
     StringValue v1(val1);
     StringValue v2 = val2;
     return v1 <= v2;
 }
 
-bool operator>=(std::string val1, StringValue& val2) {
+NumberValue operator>=(std::string val1, StringValue val2) {
     StringValue v1(val1);
     StringValue v2 = val2;
     return v1 >= v2;
 }
 
-bool operator==(std::string val1, StringValue& val2) {
+NumberValue operator==(std::string val1, StringValue val2) {
     StringValue v1(val1);
     StringValue v2 = val2;
     return v1 == v2;
 }
 
-bool operator!=(std::string val1, StringValue& val2) {
+NumberValue operator!=(std::string val1, StringValue val2) {
     StringValue v1(val1);
     StringValue v2 = val2;
     return v1 != v2;
 }
 
-char& StringValue::operator[](int index) {
-    if (index < 0 || index >= this->len) {
-        throw std::runtime_error("index out of bounds (" + std::to_string(index) + ") for string '" + this->value + "'");
+std::shared_ptr<Value> StringValue::operator[](Value& idx) {
+    NumberValue v = (NumberValue) idx;
+    if (v.get_type() != numbertype_e::Integer) {
+        throw std::runtime_error("index not an integer");
     }
-    return this->value[index];
+    
+    int val = (int) v.get_value();
+    if (val < 0 || val >= this->len) {
+        throw std::runtime_error("index out of bounds (" + std::to_string(val) + ") for string '" + this->value + "'");
+    }
+    return StringValue(std::string(1, this->value[val])).clone();
 }
 
 StringValue& StringValue::operator=(Value& val) {
@@ -286,4 +292,60 @@ StringValue& StringValue::operator=(Value& val) {
 StringValue::operator NumberValue() const {
     std::string v = this->value;
     return NumberValue(v);
+}
+
+NumberValue operator&&(StringValue val1, StringValue val2) {
+    return val1.value.length() > 0 && val2.value.length() > 0;
+}
+
+NumberValue operator&&(StringValue val1, Value* val2) {
+    StringValue v1 = val1;
+    StringValue v2 = (StringValue) *val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2 = StringValue(val2);
+    return v1 && v2;
+}
+
+NumberValue operator&&(std::string val1, StringValue val2) {
+    StringValue v1 = StringValue(val1);
+    StringValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator||(StringValue val1, StringValue val2) {
+    return val1.value.length() > 0 || val2.value.length() > 0;
+}
+
+NumberValue operator||(StringValue val1, Value* val2) {
+    StringValue v1 = val1;
+    StringValue v2 = (StringValue) *val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(Value* val1, StringValue val2) {
+    StringValue v1 = (StringValue) *val1;
+    StringValue v2 = val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(StringValue val1, std::string val2) {
+    StringValue v1 = val1;
+    StringValue v2 = StringValue(val2);
+    return v1 || v2;
+}
+
+NumberValue operator||(std::string val1, StringValue val2) {
+    StringValue v1 = StringValue(val1);
+    StringValue v2 = val2;
+    return v1 || v2;
 }

@@ -22,6 +22,22 @@ public:
     std::string get_value() const;
 
     virtual std::unique_ptr<Value> clone() const = 0;
+
+    friend std::unique_ptr<Value> operator+(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator-(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator*(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator/(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator%(Value& val1, Value& val2);
+
+    friend std::unique_ptr<Value> operator<(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator>(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator<=(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator>=(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator==(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator!=(Value& val1, Value& val2);
+
+    friend std::unique_ptr<Value> operator&&(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> operator||(Value& val1, Value& val2);
 };
 
 #endif // __VALUE_HPP__

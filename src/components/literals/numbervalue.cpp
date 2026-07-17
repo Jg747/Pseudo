@@ -48,7 +48,11 @@ void NumberValue::set_value(std::string& val) {
     }
 
     if (val.contains(".")) {
-        this->type = numbertype_e::Double;
+        if (val.substr(val.find(".") + 1).find_first_not_of("0") == std::string::npos) {
+            this->type = numbertype_e::Integer;
+        } else {
+            this->type = numbertype_e::Double;
+        }
     } else {
         this->type = numbertype_e::Integer;
     }
@@ -65,6 +69,11 @@ bool NumberValue::is_number(std::string& str) {
     if (str.empty()) {
         return false;
     }
+
+    if (str.contains(".") && str.find(".") != str.find_last_of(".")) {
+        return false;
+    }
+
     return std::all_of(str.begin(), str.end(), [](unsigned char c) { return std::isdigit(c) || c == '.' || c == '-'; });
 }
 
@@ -98,7 +107,7 @@ NumberValue NumberValue::mod(Value& val1, Value& val2) {
     return v1 % v2;
 }
 
-NumberValue operator+(NumberValue& val1, NumberValue& val2) {
+NumberValue operator+(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -109,7 +118,7 @@ NumberValue operator+(NumberValue& val1, NumberValue& val2) {
     return NumberValue(v1 + v2);
 }
 
-NumberValue operator-(NumberValue& val1, NumberValue& val2) {
+NumberValue operator-(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -120,7 +129,7 @@ NumberValue operator-(NumberValue& val1, NumberValue& val2) {
     return NumberValue(v1 - v2);
 }
 
-NumberValue operator*(NumberValue& val1, NumberValue& val2) {
+NumberValue operator*(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -131,7 +140,7 @@ NumberValue operator*(NumberValue& val1, NumberValue& val2) {
     return NumberValue(v1 * v2);
 }
 
-NumberValue operator/(NumberValue& val1, NumberValue& val2) {
+NumberValue operator/(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -146,7 +155,7 @@ NumberValue operator/(NumberValue& val1, NumberValue& val2) {
     return NumberValue(v1 / v2);
 }
 
-NumberValue operator%(NumberValue& val1, NumberValue& val2) {
+NumberValue operator%(NumberValue val1, NumberValue val2) {
     double v1 = (double) val1.get_value();
     double v2 = (double) val2.get_value();
 
@@ -157,247 +166,247 @@ NumberValue operator%(NumberValue& val1, NumberValue& val2) {
     return NumberValue(std::fmod(v1, v2));
 }
 
-NumberValue operator+(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator+(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 + v2;
 }
 
-NumberValue operator-(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator-(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 - v2;
 }
 
-NumberValue operator*(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator*(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 * v2;
 }
 
-NumberValue operator/(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator/(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 / v2;
 }
 
-NumberValue operator%(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator%(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 % v2;
 }
 
-NumberValue operator+(NumberValue& val1, Value& val2) {
+NumberValue operator+(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 + v2;
 }
 
-NumberValue operator-(NumberValue& val1, Value& val2) {
+NumberValue operator-(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 - v2;
 }
 
-NumberValue operator*(NumberValue& val1, Value& val2) {
+NumberValue operator*(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 * v2;
 }
 
-NumberValue operator/(NumberValue& val1, Value& val2) {
+NumberValue operator/(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 / v2;
 }
 
-NumberValue operator%(NumberValue& val1, Value& val2) {
+NumberValue operator%(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 % v2;
 }
 
-NumberValue operator+(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = (NumberValue) val2;
-    return v1 + v2;
-}
-
-NumberValue operator-(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = (NumberValue) val2;
-    return v1 - v2;
-}
-
-NumberValue operator*(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = (NumberValue) val2;
-    return v1 * v2;
-}
-
-NumberValue operator/(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = (NumberValue) val2;
-    return v1 / v2;
-}
-
-NumberValue operator%(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = (NumberValue) val2;
-    return v1 % v2;
-}
-
-NumberValue operator+(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 + v2;
-}
-
-NumberValue operator-(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 - v2;
-}
-
-NumberValue operator*(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 * v2;
-}
-
-NumberValue operator/(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 / v2;
-}
-
-NumberValue operator%(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 % v2;
-}
-
-NumberValue operator+(int val1, NumberValue& val2) {
+NumberValue operator+(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 + v2;
 }
 
-NumberValue operator-(int val1, NumberValue& val2) {
+NumberValue operator-(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 - v2;
 }
 
-NumberValue operator*(int val1, NumberValue& val2) {
+NumberValue operator*(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 * v2;
 }
 
-NumberValue operator/(int val1, NumberValue& val2) {
+NumberValue operator/(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 / v2;
 }
 
-NumberValue operator%(int val1, NumberValue& val2) {
+NumberValue operator%(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 % v2;
 }
 
-NumberValue operator+(NumberValue& val1, int val2) {
+NumberValue operator+(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 + v2;
 }
 
-NumberValue operator-(NumberValue& val1, int val2) {
+NumberValue operator-(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 - v2;
 }
 
-NumberValue operator*(NumberValue& val1, int val2) {
+NumberValue operator*(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 * v2;
 }
 
-NumberValue operator/(NumberValue& val1, int val2) {
+NumberValue operator/(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 / v2;
 }
 
-NumberValue operator%(NumberValue& val1, int val2) {
+NumberValue operator%(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 % v2;
 }
 
-NumberValue operator+(double val1, NumberValue& val2) {
+NumberValue operator+(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 + v2;
 }
 
-NumberValue operator-(double val1, NumberValue& val2) {
+NumberValue operator-(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 - v2;
 }
 
-NumberValue operator*(double val1, NumberValue& val2) {
+NumberValue operator*(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 * v2;
 }
 
-NumberValue operator/(double val1, NumberValue& val2) {
+NumberValue operator/(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 / v2;
 }
 
-NumberValue operator%(double val1, NumberValue& val2) {
+NumberValue operator%(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = (NumberValue) val2;
     return v1 % v2;
 }
 
-NumberValue operator+(NumberValue& val1, double val2) {
+NumberValue operator+(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 + v2;
 }
 
-NumberValue operator-(NumberValue& val1, double val2) {
+NumberValue operator-(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 - v2;
 }
 
-NumberValue operator*(NumberValue& val1, double val2) {
+NumberValue operator*(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 * v2;
 }
 
-NumberValue operator/(NumberValue& val1, double val2) {
+NumberValue operator/(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 / v2;
 }
 
-NumberValue operator%(NumberValue& val1, double val2) {
+NumberValue operator%(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 % v2;
 }
 
-bool operator<(NumberValue& val1, NumberValue& val2) {
+NumberValue operator+(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = (NumberValue) val2;
+    return v1 + v2;
+}
+
+NumberValue operator-(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = (NumberValue) val2;
+    return v1 - v2;
+}
+
+NumberValue operator*(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = (NumberValue) val2;
+    return v1 * v2;
+}
+
+NumberValue operator/(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = (NumberValue) val2;
+    return v1 / v2;
+}
+
+NumberValue operator%(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = (NumberValue) val2;
+    return v1 % v2;
+}
+
+NumberValue operator+(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 + v2;
+}
+
+NumberValue operator-(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 - v2;
+}
+
+NumberValue operator*(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 * v2;
+}
+
+NumberValue operator/(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 / v2;
+}
+
+NumberValue operator%(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 % v2;
+}
+
+NumberValue operator<(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -405,10 +414,10 @@ bool operator<(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) < ((int) v2);
     }
 
-    return v1 < v2;
+    return NumberValue(v1 < v2);
 }
 
-bool operator>(NumberValue& val1, NumberValue& val2) {
+NumberValue operator>(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -416,10 +425,10 @@ bool operator>(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) > ((int) v2);
     }
 
-    return v1 > v2;
+    return NumberValue(v1 > v2);
 }
 
-bool operator<=(NumberValue& val1, NumberValue& val2) {
+NumberValue operator<=(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -427,10 +436,10 @@ bool operator<=(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) <= ((int) v2);
     }
 
-    return v1 <= v2;
+    return NumberValue(v1 <= v2);
 }
 
-bool operator>=(NumberValue& val1, NumberValue& val2) {
+NumberValue operator>=(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -438,10 +447,10 @@ bool operator>=(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) >= ((int) v2);
     }
 
-    return v1 >= v2;
+    return NumberValue(v1 >= v2);
 }
 
-bool operator==(NumberValue& val1, NumberValue& val2) {
+NumberValue operator==(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -449,10 +458,10 @@ bool operator==(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) == ((int) v2);
     }
 
-    return v1 == v2;
+    return NumberValue(v1 == v2);
 }
 
-bool operator!=(NumberValue& val1, NumberValue& val2) {
+NumberValue operator!=(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_value();
     double v2 = val2.get_value();
 
@@ -460,297 +469,415 @@ bool operator!=(NumberValue& val1, NumberValue& val2) {
         return ((int) v1) != ((int) v2);
     }
 
-    return v1 != v2;
+    return NumberValue(v1 != v2);
 }
 
-bool operator<(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator<(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 < v2;
 }
 
-bool operator>(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator>(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 > v2;
 }
 
-bool operator<=(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator<=(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 <= v2;
 }
 
-bool operator>=(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator>=(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 >= v2;
 }
 
-bool operator==(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator==(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 == v2;
 }
 
-bool operator!=(Value& val1, NumberValue& val2) {
-    NumberValue v1 = (NumberValue) val1;
+NumberValue operator!=(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
     NumberValue v2 = val2;
     return v1 != v2;
 }
 
 
-bool operator<(NumberValue& val1, Value& val2) {
+NumberValue operator<(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 < v2;
 }
 
-bool operator>(NumberValue& val1, Value& val2) {
+NumberValue operator>(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 > v2;
 }
 
-bool operator<=(NumberValue& val1, Value& val2) {
+NumberValue operator<=(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 <= v2;
 }
 
-bool operator>=(NumberValue& val1, Value& val2) {
+NumberValue operator>=(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 >= v2;
 }
 
-bool operator==(NumberValue& val1, Value& val2) {
+NumberValue operator==(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 == v2;
 }
 
-bool operator!=(NumberValue& val1, Value& val2) {
+NumberValue operator!=(NumberValue val1, Value* val2) {
     NumberValue v1 = val1;
-    NumberValue v2 = (NumberValue) val2;
+    NumberValue v2 = (NumberValue) *val2;
     return v1 != v2;
 }
 
-bool operator<(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 < v2;
-}
-
-bool operator>(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 > v2;
-}
-
-bool operator<=(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 <= v2;
-}
-
-bool operator>=(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 >= v2;
-}
-
-bool operator==(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 == v2;
-}
-
-bool operator!=(NumberValue& val1, std::string val2) {
-    NumberValue v1 = val1;
-    NumberValue v2(val2);
-    return v1 != v2;
-}
-
-bool operator<(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 < v2;
-}
-
-bool operator>(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 > v2;
-}
-
-bool operator<=(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 <= v2;
-}
-
-bool operator>=(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 >= v2;
-}
-
-bool operator==(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 == v2;
-}
-
-bool operator!=(std::string val1, NumberValue& val2) {
-    NumberValue v1(val1);
-    NumberValue v2 = val2;
-    return v1 != v2;
-}
-
-bool operator<(NumberValue& val1, int val2) {
+NumberValue operator<(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 < v2;
 }
 
-bool operator>(NumberValue& val1, int val2) {
+NumberValue operator>(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 > v2;
 }
 
-bool operator<=(NumberValue& val1, int val2) {
+NumberValue operator<=(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 <= v2;
 }
 
-bool operator>=(NumberValue& val1, int val2) {
+NumberValue operator>=(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 >= v2;
 }
 
-bool operator==(NumberValue& val1, int val2) {
+NumberValue operator==(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 == v2;
 }
 
-bool operator!=(NumberValue& val1, int val2) {
+NumberValue operator!=(NumberValue val1, std::string val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 != v2;
 }
 
-bool operator<(int val1, NumberValue& val2) {
+NumberValue operator<(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 < v2;
 }
 
-bool operator>(int val1, NumberValue& val2) {
+NumberValue operator>(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 > v2;
 }
 
-bool operator<=(int val1, NumberValue& val2) {
+NumberValue operator<=(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 <= v2;
 }
 
-bool operator>=(int val1, NumberValue& val2) {
+NumberValue operator>=(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 >= v2;
 }
 
-bool operator==(int val1, NumberValue& val2) {
+NumberValue operator==(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 == v2;
 }
 
-bool operator!=(int val1, NumberValue& val2) {
+NumberValue operator!=(std::string val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 != v2;
 }
 
-bool operator<(NumberValue& val1, double val2) {
+NumberValue operator<(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 < v2;
 }
 
-bool operator>(NumberValue& val1, double val2) {
+NumberValue operator>(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 > v2;
 }
 
-bool operator<=(NumberValue& val1, double val2) {
+NumberValue operator<=(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 <= v2;
 }
 
-bool operator>=(NumberValue& val1, double val2) {
+NumberValue operator>=(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 >= v2;
 }
 
-bool operator==(NumberValue& val1, double val2) {
+NumberValue operator==(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 == v2;
 }
 
-bool operator!=(NumberValue& val1, double val2) {
+NumberValue operator!=(NumberValue val1, int val2) {
     NumberValue v1 = val1;
     NumberValue v2(val2);
     return v1 != v2;
 }
 
-
-bool operator<(double val1, NumberValue& val2) {
+NumberValue operator<(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 < v2;
 }
 
-bool operator>(double val1, NumberValue& val2) {
+NumberValue operator>(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 > v2;
 }
 
-bool operator<=(double val1, NumberValue& val2) {
+NumberValue operator<=(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 <= v2;
 }
 
-bool operator>=(double val1, NumberValue& val2) {
+NumberValue operator>=(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 >= v2;
 }
 
-bool operator==(double val1, NumberValue& val2) {
+NumberValue operator==(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 == v2;
 }
 
-bool operator!=(double val1, NumberValue& val2) {
+NumberValue operator!=(int val1, NumberValue val2) {
     NumberValue v1(val1);
     NumberValue v2 = val2;
     return v1 != v2;
+}
+
+NumberValue operator<(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 < v2;
+}
+
+NumberValue operator>(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 > v2;
+}
+
+NumberValue operator<=(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 <= v2;
+}
+
+NumberValue operator>=(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 >= v2;
+}
+
+NumberValue operator==(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 == v2;
+}
+
+NumberValue operator!=(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2(val2);
+    return v1 != v2;
+}
+
+
+NumberValue operator<(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 < v2;
+}
+
+NumberValue operator>(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 > v2;
+}
+
+NumberValue operator<=(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 <= v2;
+}
+
+NumberValue operator>=(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 >= v2;
+}
+
+NumberValue operator==(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 == v2;
+}
+
+NumberValue operator!=(double val1, NumberValue val2) {
+    NumberValue v1(val1);
+    NumberValue v2 = val2;
+    return v1 != v2;
+}
+
+NumberValue operator&&(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_value();
+    double v2 = val2.get_value();
+
+    if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
+        return (int) v1 && (int) v2;
+    }
+
+    return v1 && v2;
+}
+
+NumberValue operator&&(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
+    NumberValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(NumberValue val1, Value* val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = (NumberValue) *val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(std::string val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(NumberValue val1, std::string val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 && v2;
+}
+
+NumberValue operator&&(NumberValue val1, int val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 && v2;
+}
+
+NumberValue operator&&(int val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator&&(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 && v2;
+}
+
+NumberValue operator&&(double val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 && v2;
+}
+
+NumberValue operator||(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_value();
+    double v2 = val2.get_value();
+
+    if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
+        return (int) v1 || (int) v2;
+    }
+
+    return v1 || v2;
+}
+
+NumberValue operator||(Value* val1, NumberValue val2) {
+    NumberValue v1 = (NumberValue) *val1;
+    NumberValue v2 = val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(NumberValue val1, Value* val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = (NumberValue) *val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(std::string val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(NumberValue val1, std::string val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 || v2;
+}
+
+NumberValue operator||(NumberValue val1, int val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 || v2;
+}
+
+NumberValue operator||(int val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 || v2;
+}
+
+NumberValue operator||(NumberValue val1, double val2) {
+    NumberValue v1 = val1;
+    NumberValue v2 = NumberValue(val2);
+    return v1 || v2;
+}
+
+NumberValue operator||(double val1, NumberValue val2) {
+    NumberValue v1 = NumberValue(val1);
+    NumberValue v2 = val2;
+    return v1 || v2;
 }
 
 NumberValue& NumberValue::operator=(Value& val) {
@@ -769,4 +896,11 @@ NumberValue::operator StringValue() const {
         s = std::to_string((int) this->get_value());
     }
     return StringValue(s);
+}
+
+NumberValue::operator bool() const {
+    if (this->get_type() == numbertype_e::Integer) {
+        return (int) this->get_value();
+    }
+    return this->get_value();
 }

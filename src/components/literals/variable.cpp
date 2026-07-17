@@ -1,5 +1,6 @@
 #include "components/literals/variable.hpp"
 #include "components/literals/value.hpp"
+#include "components/literals/arrayvalue.hpp"
 #include "lang.hpp"
 
 #include <string>
@@ -15,14 +16,42 @@ Variable::Variable() {
 
 Variable::Variable(std::string& name) : Variable() {
     this->name = name;
+    is_arr = false;
+}
+
+Variable::Variable(std::string&& name) : Variable() {
+    this->name = name;
+    is_arr = false;
 }
 
 Variable::Variable(std::string& name, Value& val) : Variable(name) {
-    add_value(val);
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+}
+
+Variable::Variable(std::string& name, Value&& val) : Variable(name) {
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+}
+
+Variable::Variable(std::string&& name, Value& val) : Variable(name) {
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+}
+
+Variable::Variable(std::string&& name, Value&& val) : Variable(name) {
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
 }
 
 Variable::Variable(Value& val) : Variable() {
-    add_value(val);
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+}
+
+Variable::Variable(Value&& val) : Variable() {
+    value = std::move(val.clone());
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
 }
     
 int Variable::get_id() const {
@@ -33,55 +62,35 @@ std::string Variable::get_name() const {
     return name;
 }
 
+bool Variable::is_array() const {
+    return is_arr;
+}
+
+void Variable::set_value(std::unique_ptr<Value> val) {
+    value = std::move(val);
+}
+
+void Variable::set_value(std::shared_ptr<Value> val) {
+    value = std::move(val);
+}
+
 void Variable::set_value(Value& val) {
-    this->values.clear();
-    add_value(val);
+    value = val.clone();
 }
 
 void Variable::set_value(Value&& val) {
-    this->values.clear();
-    add_value(val);
+    value = val.clone();
 }
 
-void Variable::set_value(std::unique_ptr<Value>& val) {
-    this->values.clear();
-    add_value(val);
+std::shared_ptr<Value> Variable::get_value() {
+    return value;
 }
 
-Value* Variable::get_value() {
-    return this->values[0].get();
-}
-
-Value* Variable::operator[](int idx) {
-    std::size_t index = idx;
-    if (index < 0 || index >= values.size()) {
-        throw std::runtime_error("index out of bounds (" + std::to_string(index) + ") for variable '" + name + "' (id: " + std::to_string(id) + ")");
+std::shared_ptr<ArrayValue> Variable::get_array_value() {
+    if (!is_arr) {
+        return nullptr;
     }
-    return values[index].get();
-}
-
-void Variable::add_value(Value& val) {
-    values.push_back(val.clone());
-}
-
-void Variable::add_value(Value&& val) {
-    add_value(static_cast<Value&>(val));
-}
-
-void Variable::add_value(std::unique_ptr<Value>& val) {
-    values.push_back(std::move(val));
-}
-
-void Variable::remove_value(int idx) {
-    std::size_t index = idx;
-    if (index < 0 || index >= values.size()) {
-        throw std::runtime_error("index out of bounds (" + std::to_string(index) + ") for variable '" + name + "' (id: " + std::to_string(id) + ")");
-    }
-    values.erase(values.begin() + index, values.begin() + index + 1);
-}
-
-int Variable::get_length() {
-    return values.size();
+    return std::dynamic_pointer_cast<ArrayValue>(value);
 }
 
 bool Variable::is_name_correct(std::string name) {

@@ -27,48 +27,60 @@ public:
     static StringValue subst(Value& val, int start, int count, StringValue& string);
     static StringValue subst(Value& val, int start, int count, std::string string);
 
-    friend StringValue operator+(StringValue& val1, StringValue& val2);
-    friend StringValue operator+(StringValue& val1, std::string val2);
-    friend StringValue operator+(std::string val1, StringValue& val2);
-    friend StringValue operator+(StringValue& val1, Value& val2);
-    friend StringValue operator+(Value& val1, StringValue& val2);
+    friend StringValue operator+(StringValue val1, StringValue val2);
+    friend StringValue operator+(StringValue val1, std::string val2);
+    friend StringValue operator+(std::string val1, StringValue val2);
+    friend StringValue operator+(StringValue val1, Value* val2);
+    friend StringValue operator+(Value* val1, StringValue val2);
 
-    friend bool operator<(StringValue& val1, StringValue& val2);
-    friend bool operator>(StringValue& val1, StringValue& val2);
-    friend bool operator<=(StringValue& val1, StringValue& val2);
-    friend bool operator>=(StringValue& val1, StringValue& val2);
-    friend bool operator==(StringValue& val1, StringValue& val2);
-    friend bool operator!=(StringValue& val1, StringValue& val2);
+    friend NumberValue operator<(StringValue val1, StringValue val2);
+    friend NumberValue operator>(StringValue val1, StringValue val2);
+    friend NumberValue operator<=(StringValue val1, StringValue val2);
+    friend NumberValue operator>=(StringValue val1, StringValue val2);
+    friend NumberValue operator==(StringValue val1, StringValue val2);
+    friend NumberValue operator!=(StringValue val1, StringValue val2);
 
-    friend bool operator<(StringValue& val1, Value& val2);
-    friend bool operator>(StringValue& val1, Value& val2);
-    friend bool operator<=(StringValue& val1, Value& val2);
-    friend bool operator>=(StringValue& val1, Value& val2);
-    friend bool operator==(StringValue& val1, Value& val2);
-    friend bool operator!=(StringValue& val1, Value& val2);
+    friend NumberValue operator<(StringValue val1, Value* val2);
+    friend NumberValue operator>(StringValue val1, Value* val2);
+    friend NumberValue operator<=(StringValue val1, Value* val2);
+    friend NumberValue operator>=(StringValue val1, Value* val2);
+    friend NumberValue operator==(StringValue val1, Value* val2);
+    friend NumberValue operator!=(StringValue val1, Value* val2);
 
-    friend bool operator<(Value& val1, StringValue& val2);
-    friend bool operator>(Value& val1, StringValue& val2);
-    friend bool operator<=(Value& val1, StringValue& val2);
-    friend bool operator>=(Value& val1, StringValue& val2);
-    friend bool operator==(Value& val1, StringValue& val2);
-    friend bool operator!=(Value& val1, StringValue& val2);
+    friend NumberValue operator<(Value* val1, StringValue val2);
+    friend NumberValue operator>(Value* val1, StringValue val2);
+    friend NumberValue operator<=(Value* val1, StringValue val2);
+    friend NumberValue operator>=(Value* val1, StringValue val2);
+    friend NumberValue operator==(Value* val1, StringValue val2);
+    friend NumberValue operator!=(Value* val1, StringValue val2);
 
-    friend bool operator<(StringValue& val1, std::string val2);
-    friend bool operator>(StringValue& val1, std::string val2);
-    friend bool operator<=(StringValue& val1, std::string val2);
-    friend bool operator>=(StringValue& val1, std::string val2);
-    friend bool operator==(StringValue& val1, std::string val2);
-    friend bool operator!=(StringValue& val1, std::string val2);
+    friend NumberValue operator<(StringValue val1, std::string val2);
+    friend NumberValue operator>(StringValue val1, std::string val2);
+    friend NumberValue operator<=(StringValue val1, std::string val2);
+    friend NumberValue operator>=(StringValue val1, std::string val2);
+    friend NumberValue operator==(StringValue val1, std::string val2);
+    friend NumberValue operator!=(StringValue val1, std::string val2);
 
-    friend bool operator<(std::string val1, StringValue& val2);
-    friend bool operator>(std::string val1, StringValue& val2);
-    friend bool operator<=(std::string val1, StringValue& val2);
-    friend bool operator>=(std::string val1, StringValue& val2);
-    friend bool operator==(std::string val1, StringValue& val2);
-    friend bool operator!=(std::string val1, StringValue& val2);
+    friend NumberValue operator<(std::string val1, StringValue val2);
+    friend NumberValue operator>(std::string val1, StringValue val2);
+    friend NumberValue operator<=(std::string val1, StringValue val2);
+    friend NumberValue operator>=(std::string val1, StringValue val2);
+    friend NumberValue operator==(std::string val1, StringValue val2);
+    friend NumberValue operator!=(std::string val1, StringValue val2);
 
-    char& operator[](int index);
+    friend NumberValue operator&&(StringValue val1, StringValue val2);
+    friend NumberValue operator&&(StringValue val1, Value* val2);
+    friend NumberValue operator&&(Value* val1, StringValue val2);
+    friend NumberValue operator&&(StringValue val1, std::string val2);
+    friend NumberValue operator&&(std::string val1, StringValue val2);
+
+    friend NumberValue operator||(StringValue val1, StringValue val2);
+    friend NumberValue operator||(StringValue val1, Value* val2);
+    friend NumberValue operator||(Value* val1, StringValue val2);
+    friend NumberValue operator||(StringValue val1, std::string val2);
+    friend NumberValue operator||(std::string val1, StringValue val2);
+
+    std::shared_ptr<Value> operator[](Value& idx);
     StringValue& operator=(Value& val);
     
     operator NumberValue() const;
