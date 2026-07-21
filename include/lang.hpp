@@ -42,9 +42,8 @@ enum class tokens_e {
 #define FUNCTION_STR                    "FUNCTION"
 #define RETURN_STR                      "RETURN"
 
-#define ALLOWED_VARSFUNCS_CHARS         "^[A-Za-z_][A-Za-z_0-9]*$" // --------------------------------------vvvvvvvvvvvvvvvvvvvvvv
-#define ALLOWED_OPERATORS               "^(<=)$|^(>=)$|^(==)$|^(AND)$|^(OR)$|^(!=)$|^([\\+\\-\\*\\/\\%<>])$|^\\[(([0-9]+)|([A-Za-z_][A-Za-z_0-9]*))\\]$|^(\\^)$|^(\\$)$|^(\\?)$" // arr? arr_size
-#define EXPR_CHARS                      "^(([0-9]+)|([0-9]+\\.[0-9]+))$"
+#define ALLOWED_VARS_CHARS              "^[A-Za-z_][A-Za-z_0-9]*(\\[.*)?$"
+
 #define STRING_BRACKET_CHAR             '\"'
 #define STRING_ESCAPE_CHAR              '\\'
 #define WRITE_SEPARATOR                 ','

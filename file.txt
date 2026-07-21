@@ -1,3 +1,4 @@
-BEGIN
-    x <- x+y+z+10
+BEGIN 
+    REPEAT
+    UNTIL(x < 5)
 END

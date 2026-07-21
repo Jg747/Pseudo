@@ -16,16 +16,16 @@
 int main(int argc, char** argv) {
     using namespace std;
 
-    /*SyntaxAnalyzer an("file.txt");
+    SyntaxAnalyzer an("file.txt");
     if (an.analyze()) {
         cout << "\nOK!";
     } else {
         cout << "\nNON OK!";
-    }*/
-
-    if (argc != 2) {
-        return 1;
     }
+
+    /*if (argc != 2) {
+        return 1;
+    }*/
     /*Lexer l;
     std::vector<Token> tokens = l.tokenize(std::string(argv[1]));
     Parser p;
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     for (auto t : tokens2) {
         std::cout << t << std::endl;
     }*/
-    Expression e = Expression::parse_expression(std::string(argv[1]));
+    /*Expression e = Expression::parse_expression(std::string(argv[1]));
 
     VariableContext v;
     ArrayValue arr;
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     Variable thomas(std::string("thomas"), StringValue("Brotherro"));
     v.set(std::make_shared<Variable>(ciao));
     v.set(std::make_shared<Variable>(thomas));
-    std::cout << e.evaluate(v)->get_value();
+    std::cout << e.evaluate(v)->get_value();*/
 
     return 0;
 }

@@ -94,6 +94,6 @@ std::shared_ptr<ArrayValue> Variable::get_array_value() {
 }
 
 bool Variable::is_name_correct(std::string name) {
-    std::regex reg(ALLOWED_VARSFUNCS_CHARS);
+    std::regex reg(ALLOWED_VARS_CHARS);
     return std::regex_match(name, reg);
 }

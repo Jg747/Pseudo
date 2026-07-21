@@ -3,6 +3,7 @@
 
 #include "analyzer.hpp"
 #include "lang.hpp"
+#include "expression/expression.hpp"
 #include "components/instructions/instruction.hpp"
 
 #include <string>
@@ -13,6 +14,7 @@
 #include <optional>
 #include <memory>
 #include <fstream>
+#include <utility>
 #include <stack>
 
 typedef struct {
@@ -27,15 +29,13 @@ private:
     enum add_instruction_ret { NO_TOKEN, ERROR, NEXT, CALLBACK };
 
     static const char* whitespaces;
-    static const std::regex var_start_regex;
-    static const std::regex allowed_operators;
-    static const std::regex expr_regex;
+    static const std::regex var_regex;
     static std::unordered_map<std::string, tokens_e> keywords;
     
     static void load_keywords();
 
     std::ifstream in;
-    std::vector<std::string> cur_tokens;
+    std::vector<std::pair<std::string, std::size_t>> cur_tokens;
     std::string _cur_line;
     std::stack<char> parenthesis;
     std::size_t cur_index;
@@ -53,7 +53,7 @@ private:
 
 public:
     static std::optional<tokens_e> analyze_token(std::string& token);
-    static std::vector<std::string> tokenize_string(std::string string);
+    static std::vector<std::pair<std::string, std::size_t>> tokenize_string(std::string string);
     static void trim_string(std::string& string);
     static bool is_keyword(std::string& token);
     
@@ -80,13 +80,14 @@ public:
 class InstructionAnalyzer {
 protected:
     SyntaxAnalyzer* a;
-    std::vector<std::string>* tokens;
+    std::vector<std::pair<std::string, std::size_t>>* tokens;
     std::size_t* cur_index;
     bool begin;
+    
+    Expression get_condition();
 public:
-    void set_params(SyntaxAnalyzer *a, std::vector<std::string>* tokens, std::size_t* index);
+    void set_params(SyntaxAnalyzer *a, std::vector<std::pair<std::string, std::size_t>>* tokens, std::size_t* index);
     void set_begin();
-    static bool get_condition(SyntaxAnalyzer* a, std::size_t* cur_index, std::vector<std::string>* tokens, std::vector<std::string>& expression);
     virtual bool analyze_syntax() = 0;
     virtual void init_state();
     virtual bool next_state(tokens_e token);
