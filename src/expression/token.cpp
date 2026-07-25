@@ -45,6 +45,8 @@ std::string Token::print() const {
             return "String";
         case token_t::Identifier:
             return "Identifier";
+        case token_t::Assign:
+            return "Assign";
         case token_t::Plus:
             return "Plus";
         case token_t::Minus:
@@ -120,7 +122,9 @@ const op_info* Token::get_op_info(token_t type) {
         { token_t::NotEqual,     {4, false, 2, op_pos::Infix} },
 
         { token_t::LogicalAnd,   {3, false, 2, op_pos::Infix} },
-        { token_t::LogicalOr,    {3, false, 2, op_pos::Infix} }
+        { token_t::LogicalOr,    {3, false, 2, op_pos::Infix} },
+
+        { token_t::Assign,       {2, false, 2, op_pos::Infix} }
     };
 
     if (table.contains(type)) {

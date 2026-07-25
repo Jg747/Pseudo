@@ -121,7 +121,8 @@ void Lexer::process_special() {
             if (expression[i] == '=') {
                 tokens.emplace_back(token_t::Equal);
             } else {
-                throw std::runtime_error("Expected '==', provided '='");
+                tokens.emplace_back(token_t::Assign);
+                i--;
             }
             break;
         }

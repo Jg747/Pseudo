@@ -15,6 +15,7 @@
 #include <memory>
 #include <fstream>
 #include <utility>
+#include <expected>
 #include <stack>
 
 typedef struct {
@@ -28,9 +29,9 @@ class SyntaxAnalyzer : public Analyzer {
 private:
     enum add_instruction_ret { NO_TOKEN, ERROR, NEXT, CALLBACK };
 
-    static const char* whitespaces;
     static const std::regex var_regex;
-    static std::unordered_map<std::string, tokens_e> keywords;
+    //static std::unordered_map<std::string, tokens_e> keywords;
+    static std::unordered_map<tokens_e, std::regex> keywords;
     
     static void load_keywords();
 
@@ -52,6 +53,8 @@ private:
     T* get_cur_instruction_top_ptr();
 
 public:
+    static const char* whitespaces;
+    
     static std::optional<tokens_e> analyze_token(std::string& token);
     static std::vector<std::pair<std::string, std::size_t>> tokenize_string(std::string string);
     static void trim_string(std::string& string);
@@ -84,7 +87,7 @@ protected:
     std::size_t* cur_index;
     bool begin;
     
-    Expression get_condition();
+    std::expected<Expression, bool> get_condition();
 public:
     void set_params(SyntaxAnalyzer *a, std::vector<std::pair<std::string, std::size_t>>* tokens, std::size_t* index);
     void set_begin();
@@ -100,7 +103,7 @@ public:
 
 class UntilAnalyzer : public InstructionAnalyzer {
 private:
-    enum class states_e { BODY, UNTIL, COND_START, EXPR, COND_END };
+    enum class states_e { BODY, UNTIL };
     UntilAnalyzer::states_e state;
 public:
     bool analyze_syntax() override;
@@ -110,7 +113,7 @@ public:
 
 class WhileAnalyzer : public InstructionAnalyzer {
 private:
-    enum class states_e { COND_START, EXPR, COND_END, BODY_BEGIN, BODY_END };
+    enum class states_e { BODY_BEGIN, WAIT_END, BODY_END };
     WhileAnalyzer::states_e state;
 public:
     bool analyze_syntax() override;
@@ -120,7 +123,7 @@ public:
 
 class IfAnalyzer : public InstructionAnalyzer { // IF, ELSE, ELIF
 private:
-    enum class states_e { COND_START, EXPR, THEN, BODY, ELSE, ELIF, ENDIF };
+    enum class states_e { COND_START, THEN, BODY, ELSE, ELIF, ENDIF };
     IfAnalyzer::states_e state;
     char section_type;
     bool analyze_condition();

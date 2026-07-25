@@ -1,4 +1,5 @@
 BEGIN 
-    REPEAT
-    UNTIL(x < 5)
+    IF (x < 5) THEN
+    ELIF (x > 5) THEN
+    ENDIF
 END

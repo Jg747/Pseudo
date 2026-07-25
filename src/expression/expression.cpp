@@ -81,6 +81,23 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                 }
                 break;
             }
+            case token_t::Assign: {
+                std::shared_ptr<Value> rhs = values.top();
+                values.pop();
+
+                std::shared_ptr<Value> lhs = values.top();
+                values.pop();
+
+                if (dynamic_cast<ArrayValue*>(lhs.get()) && dynamic_cast<ArrayValue*>(rhs.get())) {
+                    *((ArrayValue*) lhs.get()) = *rhs;
+                } else if (dynamic_cast<NumberValue*>(rhs.get())) {
+                    *lhs = (NumberValue) *rhs;
+                } else {
+                    *lhs = *rhs;
+                }
+                values.push(lhs);
+                break;
+            }
             default:
                 throw std::runtime_error("Invalid RPN token.");
         }
@@ -90,6 +107,10 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
         throw std::runtime_error("Invalid expression.");
     }
 
+    if (dynamic_cast<ArrayValue*>(values.top().get())) {
+        ArrayValue* val = ((ArrayValue*) values.top().get());
+        return (*val)[0];
+    }
     return values.top();
 }
 

@@ -9,6 +9,8 @@ enum class token_t {
     String,
     Identifier,
 
+    Assign,
+
     Plus,
     Minus,
     UnaryMinus,

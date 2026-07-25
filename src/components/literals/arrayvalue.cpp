@@ -61,8 +61,8 @@ int ArrayValue::get_length() {
 
 ArrayValue& ArrayValue::operator=(Value& val) {
     if (this != &val) {
-        ArrayValue v = (ArrayValue) val;
-        this->array = v.array;
+        ArrayValue* v = (ArrayValue*) &val;
+        this->array = v->array;
     }
     return *this;
 }
