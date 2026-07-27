@@ -24,9 +24,9 @@ std::shared_ptr<Value> ArrayValue::operator[](Value& idx) {
         throw std::runtime_error("index not an integer");
     }
     
-    int val = (int) v.get_value();
+    int val = v.get_int_value();
     if (val < 0 || (size_t) val > array.size()) {
-        throw std::runtime_error("index out of bounds (index: " + std::to_string((int) v.get_value()) + ", len: " + std::to_string(array.size()) + ")");
+        throw std::runtime_error("index out of bounds (index: " + std::to_string(v.get_int_value()) + ", len: " + std::to_string(array.size()) + ")");
     }
     return array[val];
 }

@@ -25,7 +25,9 @@ public:
 
     void set_value(std::string& val) override;
     void set_value(Value& val) override;
-    double get_value() const;
+    double get_double_value() const;
+    int get_int_value() const;
+    std::string get_value() const;
     numbertype_e get_type() const;
 
     static bool is_number(std::string& str);

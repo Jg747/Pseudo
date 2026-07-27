@@ -34,8 +34,21 @@ NumberValue::NumberValue(int value) {
     set_value(v);
 }
 
-double NumberValue::get_value() const {
+double NumberValue::get_double_value() const {
     return std::stod(value);
+}
+
+int NumberValue::get_int_value() const {
+    return std::stoi(value);
+}
+
+std::string NumberValue::get_value() const {
+    if (type == numbertype_e::Integer) {
+        return std::to_string(get_int_value());
+    } else {
+        std::string ret = std::to_string(get_double_value());
+        return ret.substr(0, ret.find_last_not_of("0") + 1);
+    }
 }
 
 numbertype_e NumberValue::get_type() const {
@@ -108,8 +121,8 @@ NumberValue NumberValue::mod(Value& val1, Value& val2) {
 }
 
 NumberValue operator+(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return NumberValue((int) v1 + (int) v2);
@@ -119,8 +132,8 @@ NumberValue operator+(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator-(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return NumberValue((int) v1 - (int) v2);
@@ -130,8 +143,8 @@ NumberValue operator-(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator*(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return NumberValue((int) v1 * (int) v2);
@@ -141,8 +154,8 @@ NumberValue operator*(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator/(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (v2 == 0) {
         throw std::runtime_error("0 division detected");
@@ -156,8 +169,8 @@ NumberValue operator/(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator%(NumberValue val1, NumberValue val2) {
-    double v1 = (double) val1.get_value();
-    double v2 = (double) val2.get_value();
+    double v1 = (double) val1.get_double_value();
+    double v2 = (double) val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return NumberValue((int) v1 % (int) v2);
@@ -407,8 +420,8 @@ NumberValue operator%(NumberValue val1, double val2) {
 }
 
 NumberValue operator<(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) < ((int) v2);
@@ -418,8 +431,8 @@ NumberValue operator<(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator>(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) > ((int) v2);
@@ -429,8 +442,8 @@ NumberValue operator>(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator<=(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) <= ((int) v2);
@@ -440,8 +453,8 @@ NumberValue operator<=(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator>=(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) >= ((int) v2);
@@ -451,8 +464,8 @@ NumberValue operator>=(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator==(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) == ((int) v2);
@@ -462,8 +475,8 @@ NumberValue operator==(NumberValue val1, NumberValue val2) {
 }
 
 NumberValue operator!=(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return ((int) v1) != ((int) v2);
@@ -763,8 +776,8 @@ NumberValue operator!=(double val1, NumberValue val2) {
 }
 
 NumberValue operator&&(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return (int) v1 && (int) v2;
@@ -822,8 +835,8 @@ NumberValue operator&&(double val1, NumberValue val2) {
 }
 
 NumberValue operator||(NumberValue val1, NumberValue val2) {
-    double v1 = val1.get_value();
-    double v2 = val2.get_value();
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
     if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
         return (int) v1 || (int) v2;
@@ -891,16 +904,16 @@ NumberValue& NumberValue::operator=(Value& val) {
 NumberValue::operator StringValue() const {
     std::string s;
     if (this->get_type() == numbertype_e::Double) {
-        s = std::to_string(this->get_value());
+        s = std::to_string(this->get_double_value());
     } else {
-        s = std::to_string((int) this->get_value());
+        s = std::to_string(this->get_int_value());
     }
     return StringValue(s);
 }
 
 NumberValue::operator bool() const {
     if (this->get_type() == numbertype_e::Integer) {
-        return (int) this->get_value();
+        return this->get_int_value();
     }
-    return this->get_value();
+    return this->get_double_value();
 }

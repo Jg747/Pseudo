@@ -1,7 +1,7 @@
 #ifndef __SYNTAXANALYZER_HPP__
 #define __SYNTAXANALYZER_HPP__
 
-#include "analyzer.hpp"
+#include "interpreter/analyzers/analyzer.hpp"
 #include "lang.hpp"
 #include "expression/expression.hpp"
 #include "components/instructions/instruction.hpp"
@@ -17,6 +17,7 @@
 #include <utility>
 #include <expected>
 #include <stack>
+#include <list>
 
 typedef struct {
     std::string lit;
@@ -27,10 +28,12 @@ class InstructionAnalyzer;
 
 class SyntaxAnalyzer : public Analyzer {
 private:
+    std::list<std::unique_ptr<Instruction>> instructions;
+    std::vector<std::string> var_list;
+
     enum add_instruction_ret { NO_TOKEN, ERROR, NEXT, CALLBACK };
 
     static const std::regex var_regex;
-    //static std::unordered_map<std::string, tokens_e> keywords;
     static std::unordered_map<tokens_e, std::regex> keywords;
     
     static void load_keywords();
@@ -76,6 +79,9 @@ public:
     std::string get_cur_line();
     void pop_top();
     void pop_next();
+
+    std::list<std::unique_ptr<Instruction>>& get_instructions();
+    std::vector<std::string>& get_var_list();
 };
 
 
@@ -87,6 +93,7 @@ protected:
     std::size_t* cur_index;
     bool begin;
     
+    virtual bool create_instruction() = 0;
     std::expected<Expression, bool> get_condition();
 public:
     void set_params(SyntaxAnalyzer *a, std::vector<std::pair<std::string, std::size_t>>* tokens, std::size_t* index);
@@ -97,6 +104,12 @@ public:
 };
 
 class AssignationAnalyzer : public InstructionAnalyzer {
+private:
+    std::string l;
+    std::string r;
+
+    bool create_instruction() override;
+
 public:
     bool analyze_syntax() override;
 };
@@ -105,6 +118,9 @@ class UntilAnalyzer : public InstructionAnalyzer {
 private:
     enum class states_e { BODY, UNTIL };
     UntilAnalyzer::states_e state;
+
+    bool create_instruction() override;
+
 public:
     bool analyze_syntax() override;
     void init_state() override;
@@ -115,6 +131,9 @@ class WhileAnalyzer : public InstructionAnalyzer {
 private:
     enum class states_e { BODY_BEGIN, WAIT_END, BODY_END };
     WhileAnalyzer::states_e state;
+
+    bool create_instruction() override;
+
 public:
     bool analyze_syntax() override;
     void init_state() override;
@@ -126,7 +145,10 @@ private:
     enum class states_e { COND_START, THEN, BODY, ELSE, ELIF, ENDIF };
     IfAnalyzer::states_e state;
     char section_type;
+    
     bool analyze_condition();
+    bool create_instruction() override;
+
 public:
     void set_section(char section);
     bool analyze_syntax() override;
@@ -136,8 +158,10 @@ public:
 
 class WriteAnalyzer : public InstructionAnalyzer {
 private:
-    // aggiungere una union per capire se è una var o un literal e fare merge dei vector per eseguire la stampa senza mantenere separati
     std::vector<write_literal> literals;
+
+    bool create_instruction() override;
+
 public:
     bool analyze_syntax() override;
     void init_state() override;
@@ -147,6 +171,9 @@ public:
 class ReadAnalyzer : public InstructionAnalyzer {
 private:
     std::vector<std::string> vars;
+
+    bool create_instruction() override;
+
 public:
     bool analyze_syntax() override;
     void init_state() override;

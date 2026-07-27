@@ -1,4 +1,4 @@
-#include "analyzers/analyzer.hpp"
+#include "interpreter/analyzers/analyzer.hpp"
 
 #include <iostream>
 #include <filesystem>

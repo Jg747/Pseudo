@@ -1,6 +1,7 @@
 #include "components/literals/variable.hpp"
 #include "components/literals/value.hpp"
 #include "components/literals/arrayvalue.hpp"
+#include "components/literals/numbervalue.hpp"
 #include "lang.hpp"
 
 #include <string>
@@ -17,11 +18,15 @@ Variable::Variable() {
 Variable::Variable(std::string& name) : Variable() {
     this->name = name;
     is_arr = false;
+
+    value = NumberValue(0).clone();
 }
 
 Variable::Variable(std::string&& name) : Variable() {
     this->name = name;
     is_arr = false;
+
+    value = NumberValue(0).clone();
 }
 
 Variable::Variable(std::string& name, Value& val) : Variable(name) {

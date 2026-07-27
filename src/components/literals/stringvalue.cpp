@@ -273,7 +273,7 @@ std::shared_ptr<Value> StringValue::operator[](Value& idx) {
         throw std::runtime_error("index not an integer");
     }
     
-    int val = (int) v.get_value();
+    int val = v.get_int_value();
     if (val < 0 || val >= this->len) {
         throw std::runtime_error("index out of bounds (" + std::to_string(val) + ") for string '" + this->value + "'");
     }

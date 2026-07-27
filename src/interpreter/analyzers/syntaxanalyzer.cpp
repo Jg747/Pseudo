@@ -2,14 +2,16 @@
 TODO
 function support
 function syntax support
-parenthesis correctness check
-shunting-yard
 */
 
-#include "analyzers/syntaxanalyzer.hpp"
 #include "lang.hpp"
+#include "interpreter/analyzers/syntaxanalyzer.hpp"
 #include "components/literals/variable.hpp"
 #include "expression/expression.hpp"
+
+#include "components/instructions/assignation.hpp"
+#include "components/instructions/read.hpp"
+#include "components/instructions/write.hpp"
 
 #include <fstream>
 #include <string>
@@ -19,6 +21,7 @@ shunting-yard
 #include <utility>
 #include <cstring>
 #include <expected>
+#include <list>
 
 const char* SyntaxAnalyzer::whitespaces = " \n\t";
 const std::regex SyntaxAnalyzer::var_regex(ALLOWED_VARS_CHARS);
@@ -50,6 +53,14 @@ void SyntaxAnalyzer::load_keywords() {
     keywords.insert({ tokens_e::RETURN, std::regex("^" + std::string(RETURN_STR) + "$") });
 }
 
+std::list<std::unique_ptr<Instruction>>& SyntaxAnalyzer::get_instructions() {
+    return instructions;
+}
+
+std::vector<std::string>& SyntaxAnalyzer::get_var_list() {
+    return var_list;
+}
+
 bool SyntaxAnalyzer::analyze() {
     in.open(this->path);
 
@@ -70,7 +81,7 @@ bool SyntaxAnalyzer::analyze() {
 bool SyntaxAnalyzer::get_next_line() {
     std::string str;
     while (std::getline(in, str)) {
-        printf("%s\n", str.c_str());
+        // printf("%s\n", str.c_str());
         cur_line++;
         int ret = analyze_line(str);
         if (ret == 0) {
@@ -334,8 +345,6 @@ std::vector<std::pair<std::string, std::size_t>> SyntaxAnalyzer::tokenize_string
     std::vector<std::pair<std::string, std::size_t>> ret;
     std::string token;
     while (std::getline(stream, token, ' ')) {
-        //trim_string(token);
-        // TODO FUNCTION TOKENS
         std::streampos pos = stream.tellg();
         if (token.size() > 0) {
             if (pos >= 0) {
@@ -452,26 +461,43 @@ bool AssignationAnalyzer::analyze_syntax() {
     size_t count = end.second + end.first.length() - token.second;
     std::string line = a->get_cur_line().substr(token.second, count);
 
-    std::string l = line.substr(0, line.find(ASSIGN_STR));
+    l = line.substr(0, line.find(ASSIGN_STR));
     if (l.empty()) {
         a->stop_interpreter("Error on left side of expression (var to assign)");
         return false;
     }
 
-    std::string r = line.substr(line.find(ASSIGN_STR) + strlen(ASSIGN_STR));
+    r = line.substr(line.find(ASSIGN_STR) + strlen(ASSIGN_STR));
     if (r.empty()) {
         a->stop_interpreter("Error on right side of expression");
         return false;
     }
 
-    try {
-        Expression expr = Expression::parse_expression(l + " = " + r);
-    } catch (std::runtime_error& e) {
-        a->stop_interpreter("Assignation error");
+    if (!create_instruction()) {
         return false;
     }
 
     a->pop_next();
+    return true;
+}
+
+bool AssignationAnalyzer::create_instruction() {
+    try {
+        auto l_vars = Expression::parse_expression(l).req_vars();
+        if (l_vars.size() == 0) {
+            a->stop_interpreter("Error on lef side of expression (var to assign)");
+            return false;
+        }
+        // la prima variabile e' sempre quella a cui viene assegnato il valore
+        // le altre sono operatori usati in caso sia una cella di un array
+        a->get_var_list().push_back(l_vars[0]);
+
+        Expression expr = Expression::parse_expression(l + " = " + r);
+        a->get_instructions().push_back(std::make_unique<Assignation>(expr));
+    } catch (std::runtime_error& e) {
+        a->stop_interpreter("Assignation error");
+        return false;
+    }
     return true;
 }
 
@@ -517,6 +543,8 @@ bool UntilAnalyzer::next_state(tokens_e token) {
     }
     return true;
 }
+
+bool UntilAnalyzer::create_instruction() {}
 
 
 bool WhileAnalyzer::analyze_syntax() {
@@ -585,6 +613,8 @@ bool WhileAnalyzer::next_state(tokens_e token) {
     }
     return true;
 }
+
+bool WhileAnalyzer::create_instruction() {}
 
 
 
@@ -698,6 +728,8 @@ bool IfAnalyzer::analyze_condition() {
     return true;
 }
 
+bool IfAnalyzer::create_instruction() {}
+
 
 
 #define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
@@ -805,7 +837,8 @@ bool WriteAnalyzer::analyze_syntax() {
         } else {
             std::string var;
 
-            for (; i < line.size() && line[i] != WRITE_SEPARATOR && !std::isspace(line[i]); i++) {
+            //for (; i < line.size() && line[i] != WRITE_SEPARATOR && !std::isspace(line[i]); i++) {
+            for (; i < line.size() && line[i] != WRITE_SEPARATOR; i++) {
                 if (!space && std::isspace(line[i])) {
                     space = true;
                 }
@@ -827,20 +860,42 @@ bool WriteAnalyzer::analyze_syntax() {
                 return false;
             }
 
-            if (!Variable::is_name_correct(var)) {
-                a->stop_interpreter("'" + var + "' is not a valid variable name");
-                return false;
+            if (var.contains("?") || var.contains("[")) {
+                if (var.contains("[")) {
+                    var = var.substr(0, var.find("["));
+                } else {
+                    var = var.substr(0, var.find("?"));
+                }
+                
+                if (!Variable::is_name_correct(var)) {
+                    a->stop_interpreter("'" + var + "' is not a valid variable name");
+                    return false;
+                }
+            } else {
+                if (!Variable::is_name_correct(var)) {
+                    a->stop_interpreter("'" + var + "' is not a valid variable name");
+                    return false;
+                }
             }
 
             literals.push_back({ .lit = var, .is_variable = true });
         }
     }
 
-    printf("write literals\n");
-    for (auto& s : literals) {
-        printf("[%d] '%s'\n", s.is_variable, s.lit.c_str());
-    }
+    create_instruction();
+    return true;
+}
 
+bool WriteAnalyzer::create_instruction() {
+    std::list<std::shared_ptr<WriteLiteral>> print;
+    for (auto& s : literals) {
+        if (s.is_variable) {
+            print.push_back(std::make_shared<WriteExpr>(Expression::parse_expression(s.lit)));
+        } else {
+            print.push_back(std::make_shared<WriteString>(s.lit));
+        }
+    }
+    a->get_instructions().push_back(std::make_unique<Write>(print));
     return true;
 }
 
@@ -946,3 +1001,5 @@ void ReadAnalyzer::init_state() {}
 bool ReadAnalyzer::next_state(tokens_e token) {
     return false;
 }
+
+bool ReadAnalyzer::create_instruction() {}

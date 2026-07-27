@@ -1,9 +1,9 @@
 #include "interpreter.hpp"
 #include "components/function.hpp"
 #include "components/literals/value.hpp"
-#include "analyzers/syntaxanalyzer.hpp"
-#include "analyzers/literalanalyzer.hpp"
-#include "analyzers/functionanalyzer.hpp"
+#include "interpreter/analyzers/syntaxanalyzer.hpp"
+#include "interpreter/analyzers/literalanalyzer.hpp"
+#include "interpreter/analyzers/functionanalyzer.hpp"
 
 #include <string>
 #include <unordered_map>

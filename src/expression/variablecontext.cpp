@@ -23,3 +23,13 @@ std::shared_ptr<Value> VariableContext::get(const std::string& name) const {
 
     return it->second->get_value();
 }
+
+std::shared_ptr<Variable> VariableContext::get_var(const std::string& name) {
+    auto it = variables.find(name);
+
+    if (it == variables.end()) {
+        throw std::runtime_error("Unknown variable: " + name);
+    }
+
+    return it->second;
+}

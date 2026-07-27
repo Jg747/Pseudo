@@ -2,8 +2,8 @@
 #define __FUNCTIONANALYZER_HPP__
 
 #include "components/function.hpp"
-#include "analyzers/analyzer.hpp"
-#include "analyzers/functionanalyzer.hpp"
+#include "interpreter/analyzers/analyzer.hpp"
+#include "interpreter/analyzers/functionanalyzer.hpp"
 
 #include <unordered_map>
 #include <string>

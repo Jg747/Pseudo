@@ -2,7 +2,7 @@
 #define __LITERALANALYZER_HPP__
 
 #include "components/literals/variable.hpp"
-#include "analyzers/analyzer.hpp"
+#include "interpreter/analyzers/analyzer.hpp"
 
 #include <unordered_map>
 #include <string>

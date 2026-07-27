@@ -9,6 +9,22 @@
 #include <stack>
 #include <cmath>
 
+Expression::Expression(std::vector<Token>& tokens) : tokens(tokens) {
+    for (auto& t : tokens) {
+        if (t.type == token_t::Identifier) {
+            var_list.push_back(t.text);
+        }
+    }
+}
+
+Expression::Expression(std::vector<Token>&& tokens) : tokens(tokens) {
+    for (auto& t : tokens) {
+        if (t.type == token_t::Identifier) {
+            var_list.push_back(t.text);
+        }
+    }
+}
+
 std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) const {
     std::stack<std::shared_ptr<Value>> values;
 
