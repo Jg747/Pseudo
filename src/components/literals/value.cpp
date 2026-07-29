@@ -1,6 +1,7 @@
 #include "components/literals/value.hpp"
 #include "components/literals/numbervalue.hpp"
 #include "components/literals/stringvalue.hpp"
+#include "components/literals/variable.hpp"
 
 #include <string>
 
@@ -34,6 +35,28 @@ void Value::set_value(std::string& val) {
 
 void Value::set_value(Value& val) {
     this->value = val.value;
+}
+
+void Value::set_variable(Variable* var) {
+    this->assign.var = var;
+    assignment_var = true;
+}
+
+void Value::set_assign_array(ArrayValue* arr) {
+    this->assign.arr = arr;
+    assignment_var = false;
+}
+
+bool Value::assigment_type() const {
+    return assignment_var;
+}
+
+ArrayValue* Value::get_assign_array() const {
+    return this->assign.arr;
+}
+
+Variable* Value::get_variable() const {
+    return this->assign.var;
 }
 
 std::string Value::get_value() const {

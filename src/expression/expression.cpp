@@ -82,6 +82,16 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                     StringValue str = *((StringValue*) values.top().get());
                     values.pop();
                     values.push(str[index]);
+                } else if (dynamic_cast<NumberValue*>(values.top().get())) {
+                    Variable* var = values.top()->get_variable();
+                    values.pop();
+                    ArrayValue array;
+                    array.add_value(StringValue(""));
+                    while (index.get_int_value() >= array.get_length()) {
+                        array.add_value(StringValue(""));
+                    }
+                    values.push(array[index]);
+                    var->set_value(array);
                 }
                 break;
             }
@@ -104,7 +114,7 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                 std::shared_ptr<Value> lhs = values.top();
                 values.pop();
 
-                if (dynamic_cast<ArrayValue*>(lhs.get()) && dynamic_cast<ArrayValue*>(rhs.get())) {
+                if (dynamic_cast<ArrayValue*>(rhs.get())) {
                     *((ArrayValue*) lhs.get()) = *rhs;
                 } else if (dynamic_cast<NumberValue*>(rhs.get())) {
                     *lhs = (NumberValue) *rhs;
@@ -123,10 +133,10 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
         throw std::runtime_error("Invalid expression.");
     }
 
-    if (dynamic_cast<ArrayValue*>(values.top().get())) {
+    /*if (dynamic_cast<ArrayValue*>(values.top().get())) {
         ArrayValue* val = ((ArrayValue*) values.top().get());
         return (*val)[0];
-    }
+    }*/
     return values.top();
 }
 

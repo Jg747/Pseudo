@@ -2,10 +2,11 @@
 #define __VARIABLE_HPP__
 
 #include "value.hpp"
-#include "arrayvalue.hpp"
 
 #include <string>
 #include <memory>
+
+class ArrayValue;
 
 class Variable {
 private:

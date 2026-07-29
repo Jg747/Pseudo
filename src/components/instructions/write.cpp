@@ -6,16 +6,27 @@
 
 #include <iostream>
 
+static std::string add_arr(ArrayValue* arr) {
+    std::string ret = "[";
+    for (int i = 0; i < arr->get_length(); i++) {
+        if (dynamic_cast<NumberValue*>((*arr)[i].get())) {
+            ret += ((NumberValue*) (*arr)[i].get())->get_value();
+        } else if (dynamic_cast<ArrayValue*>((*arr)[i].get())) {
+            ret += add_arr((ArrayValue*) (*arr)[i].get());
+        } else {
+            ret += "'" + (*arr)[i]->get_value() + "'";
+        }
+        ret += ", ";
+    }
+    ret = ret.substr(0, ret.find_last_of(", ") - 1) + "]";
+    return ret;
+}
+
 std::string WriteExpr::print(VariableContext& vars) {
     auto val = e.evaluate(vars);
     std::string ret;
     if (dynamic_cast<ArrayValue*>(val.get())) {
-        ArrayValue* arr = (ArrayValue*) val.get();
-        ret += "[";
-        for (int i = 0; i < arr->get_length(); i++) {
-            ret += (*arr)[i]->get_value() + ", ";
-        }
-        ret = ret.substr(0, ret.find_last_of(", ")) + "]";
+        ret = add_arr((ArrayValue*) val.get());
     } else if (dynamic_cast<NumberValue*>(val.get())) {
         ret = ((NumberValue*) val.get())->get_value();
     } else {

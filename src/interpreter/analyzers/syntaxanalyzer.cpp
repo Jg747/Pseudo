@@ -735,6 +735,26 @@ bool IfAnalyzer::create_instruction() {}
 #define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
 #define WRITE_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(WRITE_STR) + "'")
 #define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, WRITE_SEPARATOR) + "'")
+
+static char get_escaped(char c) {
+    switch (c) {
+        case 'n':
+            return '\n';
+        case 'r':
+            return '\r';
+        case 't':
+            return '\t';
+        case 'b':
+            return '\b';
+        case 'f':
+            return '\f';
+        case 'v':
+            return '\v';
+        default:
+            return c;
+    }
+}
+
 bool WriteAnalyzer::analyze_syntax() {
     std::string line = a->get_cur_line();
     line = line.substr(line.find_first_of(WRITE_STR) + std::string(WRITE_STR).length());
@@ -799,7 +819,7 @@ bool WriteAnalyzer::analyze_syntax() {
                 }
 
                 if (line[i] == STRING_ESCAPE_CHAR && i + 1 < line.size()) {
-                    literal += line[i + 1];
+                    literal += get_escaped(line[i + 1]);
                     i += 2;
                     if (space) {
                         (*cur_index)++;
@@ -837,7 +857,6 @@ bool WriteAnalyzer::analyze_syntax() {
         } else {
             std::string var;
 
-            //for (; i < line.size() && line[i] != WRITE_SEPARATOR && !std::isspace(line[i]); i++) {
             for (; i < line.size() && line[i] != WRITE_SEPARATOR; i++) {
                 if (!space && std::isspace(line[i])) {
                     space = true;
@@ -861,13 +880,14 @@ bool WriteAnalyzer::analyze_syntax() {
             }
 
             if (var.contains("?") || var.contains("[")) {
+                std::string temp;
                 if (var.contains("[")) {
-                    var = var.substr(0, var.find("["));
+                    temp = var.substr(0, var.find("["));
                 } else {
-                    var = var.substr(0, var.find("?"));
+                    temp = var.substr(0, var.find("?"));
                 }
                 
-                if (!Variable::is_name_correct(var)) {
+                if (!Variable::is_name_correct(temp)) {
                     a->stop_interpreter("'" + var + "' is not a valid variable name");
                     return false;
                 }
@@ -987,11 +1007,8 @@ bool ReadAnalyzer::analyze_syntax() {
 
         vars.push_back(var);
     }
-    
-    printf("read vars\n");
-    for (auto& s : vars) {
-        printf("- '%s'\n", s.c_str());
-    }
+
+    create_instruction();
 
     return true;
 }
@@ -1002,4 +1019,12 @@ bool ReadAnalyzer::next_state(tokens_e token) {
     return false;
 }
 
-bool ReadAnalyzer::create_instruction() {}
+bool ReadAnalyzer::create_instruction() {
+    // Read can create variables like an assignation
+    for (auto& v : vars) {
+        a->get_var_list().push_back(v);
+    }
+
+    a->get_instructions().push_back(std::make_unique<Read>(vars));
+    return true;
+}

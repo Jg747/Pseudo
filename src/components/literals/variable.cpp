@@ -19,44 +19,38 @@ Variable::Variable(std::string& name) : Variable() {
     this->name = name;
     is_arr = false;
 
-    value = NumberValue(0).clone();
+    set_value(NumberValue(0));
 }
 
 Variable::Variable(std::string&& name) : Variable() {
     this->name = name;
     is_arr = false;
 
-    value = NumberValue(0).clone();
+    set_value(NumberValue(0));
 }
 
 Variable::Variable(std::string& name, Value& val) : Variable(name) {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
 
 Variable::Variable(std::string& name, Value&& val) : Variable(name) {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
 
 Variable::Variable(std::string&& name, Value& val) : Variable(name) {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
 
 Variable::Variable(std::string&& name, Value&& val) : Variable(name) {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
 
 Variable::Variable(Value& val) : Variable() {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
 
 Variable::Variable(Value&& val) : Variable() {
-    value = std::move(val.clone());
-    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    set_value(val);
 }
     
 int Variable::get_id() const {
@@ -73,18 +67,26 @@ bool Variable::is_array() const {
 
 void Variable::set_value(std::unique_ptr<Value> val) {
     value = std::move(val);
+    is_arr = (dynamic_cast<ArrayValue*>(val.get()) != NULL);
+    value->set_variable(this);
 }
 
 void Variable::set_value(std::shared_ptr<Value> val) {
     value = std::move(val);
+    is_arr = (dynamic_cast<ArrayValue*>(val.get()) != NULL);
+    value->set_variable(this);
 }
 
 void Variable::set_value(Value& val) {
     value = val.clone();
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    value->set_variable(this);
 }
 
 void Variable::set_value(Value&& val) {
     value = val.clone();
+    is_arr = (dynamic_cast<ArrayValue*>(&val) != NULL);
+    value->set_variable(this);
 }
 
 std::shared_ptr<Value> Variable::get_value() {

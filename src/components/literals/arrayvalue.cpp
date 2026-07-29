@@ -25,13 +25,14 @@ std::shared_ptr<Value> ArrayValue::operator[](Value& idx) {
     }
     
     int val = v.get_int_value();
-    if (val < 0 || (size_t) val > array.size()) {
+    if (val < 0 || (size_t) val >= array.size()) {
         throw std::runtime_error("index out of bounds (index: " + std::to_string(v.get_int_value()) + ", len: " + std::to_string(array.size()) + ")");
     }
     return array[val];
 }
 
 void ArrayValue::add_value(Value& val) {
+    val.set_assign_array(this);
     array.push_back(val.clone());
 }
 
