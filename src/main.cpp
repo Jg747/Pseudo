@@ -14,7 +14,7 @@
 #include "expression/variablecontext.hpp"
 #include "interpreter/executor.hpp"
 
- int main(int argc, char** argv) {
+int main(int argc, char** argv) {
     using namespace std;
 
     SyntaxAnalyzer an("file.txt");

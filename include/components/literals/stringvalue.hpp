@@ -80,6 +80,15 @@ public:
     friend NumberValue operator||(StringValue val1, std::string val2);
     friend NumberValue operator||(std::string val1, StringValue val2);
 
+    /*
+    Added operations:
+    - string + value = stringvalue
+    - value + string = valuestring
+    - string[index] <- "" = delete string[index]
+    - string1 <><=>===!= string2 = strcmp(string1, string2)
+    - string? = string.length
+    */
+
     std::shared_ptr<Value> operator[](Value& idx);
     StringValue& operator=(Value& val);
     

@@ -9,9 +9,14 @@ function syntax support
 #include "components/literals/variable.hpp"
 #include "expression/expression.hpp"
 
+#include "components/instructions/scopedinstruction.hpp"
+
 #include "components/instructions/assignation.hpp"
 #include "components/instructions/read.hpp"
 #include "components/instructions/write.hpp"
+#include "components/instructions/while.hpp"
+#include "components/instructions/dowhile.hpp"
+#include "components/instructions/if.hpp"
 
 #include <fstream>
 #include <string>
@@ -57,8 +62,25 @@ std::list<std::unique_ptr<Instruction>>& SyntaxAnalyzer::get_instructions() {
     return instructions;
 }
 
+void SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>& i) {
+    auto last = instructions.back().get();
+    if (dynamic_cast<ScopedInstruction*>(last)) {
+        ((ScopedInstruction*) last)->add_instruction(i);
+    } else {
+        instructions.push_back(std::move(i));
+    }
+}
+
+void SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>&& i) {
+    this->add_instruction((std::unique_ptr<Instruction>&) i);
+}
+
 std::vector<std::string>& SyntaxAnalyzer::get_var_list() {
     return var_list;
+}
+
+void SyntaxAnalyzer::add_variable(std::string& var_name) {
+    var_list.push_back(var_name);
 }
 
 bool SyntaxAnalyzer::analyze() {
@@ -490,10 +512,10 @@ bool AssignationAnalyzer::create_instruction() {
         }
         // la prima variabile e' sempre quella a cui viene assegnato il valore
         // le altre sono operatori usati in caso sia una cella di un array
-        a->get_var_list().push_back(l_vars[0]);
+        a->add_variable(l_vars[0]);
 
         Expression expr = Expression::parse_expression(l + " = " + r);
-        a->get_instructions().push_back(std::make_unique<Assignation>(expr));
+        a->add_instruction(std::make_unique<Assignation>(expr));
     } catch (std::runtime_error& e) {
         a->stop_interpreter("Assignation error: " + std::string(e.what()));
         return false;
@@ -504,6 +526,9 @@ bool AssignationAnalyzer::create_instruction() {
 
 bool UntilAnalyzer::analyze_syntax() {
     init_state();
+    a->add_instruction(std::make_unique<DoWhile>());
+    pointer = (DoWhile*) a->get_instructions().back().get();
+
     if (!a->analyze_tokens()) {
         return false;
     }
@@ -520,12 +545,9 @@ bool UntilAnalyzer::analyze_syntax() {
     }
     next_state(tokens_e::NONE);
 
-    try {
-        auto expr = get_condition();
-    } catch (std::runtime_error& e) {
-        a->stop_interpreter("Error in condition");
-        return false;
-    }
+    create_instruction();
+
+    a->pop_next();
     return true;
 }
 
@@ -544,18 +566,27 @@ bool UntilAnalyzer::next_state(tokens_e token) {
     return true;
 }
 
-bool UntilAnalyzer::create_instruction() {}
-
-
-bool WhileAnalyzer::analyze_syntax() {
-    init_state();
-    
+bool UntilAnalyzer::create_instruction() {
     try {
         auto expr = get_condition();
+        if (expr.has_value()) {
+            pointer->set_condition(expr.value());
+        } else {
+            throw std::runtime_error("get_condition() returned no value");
+        }
     } catch (std::runtime_error& e) {
         a->stop_interpreter("Error in condition");
         return false;
     }
+
+    return true;
+}
+
+
+bool WhileAnalyzer::analyze_syntax() {
+    init_state();
+
+    create_instruction();
 
     while (!a->end_tokens()) {
         if (!a->analyze_tokens()) {
@@ -589,6 +620,7 @@ bool WhileAnalyzer::analyze_syntax() {
     }
 
     if (begin && state == WhileAnalyzer::states_e::BODY_END) {
+        a->pop_next();
         return true;
     }
 
@@ -614,7 +646,21 @@ bool WhileAnalyzer::next_state(tokens_e token) {
     return true;
 }
 
-bool WhileAnalyzer::create_instruction() {}
+bool WhileAnalyzer::create_instruction() {
+    try {
+        auto expr = get_condition();
+        if (expr.has_value()) {
+            a->add_instruction(std::make_unique<While>(expr.value()));
+        } else {
+            throw std::runtime_error("get_condition() returned no value");
+        }
+    } catch (std::runtime_error& e) {
+        a->stop_interpreter("Error in condition");
+        return false;
+    }
+
+    return true;
+}
 
 
 
@@ -903,6 +949,7 @@ bool WriteAnalyzer::analyze_syntax() {
     }
 
     create_instruction();
+    a->pop_next();
     return true;
 }
 
@@ -915,7 +962,7 @@ bool WriteAnalyzer::create_instruction() {
             print.push_back(std::make_shared<WriteString>(s.lit));
         }
     }
-    a->get_instructions().push_back(std::make_unique<Write>(print));
+    a->add_instruction(std::make_unique<Write>(print));
     return true;
 }
 
@@ -1009,7 +1056,7 @@ bool ReadAnalyzer::analyze_syntax() {
     }
 
     create_instruction();
-
+    a->pop_next();
     return true;
 }
 
@@ -1022,9 +1069,9 @@ bool ReadAnalyzer::next_state(tokens_e token) {
 bool ReadAnalyzer::create_instruction() {
     // Read can create variables like an assignation
     for (auto& v : vars) {
-        a->get_var_list().push_back(v);
+        a->add_variable(v);
     }
 
-    a->get_instructions().push_back(std::make_unique<Read>(vars));
+    a->add_instruction(std::make_unique<Read>(vars));
     return true;
 }

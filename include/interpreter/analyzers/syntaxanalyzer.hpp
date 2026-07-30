@@ -5,6 +5,7 @@
 #include "lang.hpp"
 #include "expression/expression.hpp"
 #include "components/instructions/instruction.hpp"
+#include "components/instructions/dowhile.hpp"
 
 #include <string>
 #include <vector>
@@ -81,7 +82,10 @@ public:
     void pop_next();
 
     std::list<std::unique_ptr<Instruction>>& get_instructions();
+    void add_instruction(std::unique_ptr<Instruction>& i);
+    void add_instruction(std::unique_ptr<Instruction>&& i);
     std::vector<std::string>& get_var_list();
+    void add_variable(std::string& var_name);
 };
 
 
@@ -118,6 +122,7 @@ class UntilAnalyzer : public InstructionAnalyzer {
 private:
     enum class states_e { BODY, UNTIL };
     UntilAnalyzer::states_e state;
+    DoWhile* pointer;
 
     bool create_instruction() override;
 
@@ -179,10 +184,5 @@ public:
     void init_state() override;
     bool next_state(tokens_e token) override;
 };
-
-/*class FunctionSyntaxAnalyzer : public InstructionAnalyzer {
-public:
-    bool analyze_syntax() override;
-};*/
 
 #endif // __SYNTAXANALYZER_HPP__

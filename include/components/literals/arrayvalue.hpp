@@ -23,6 +23,14 @@ public:
 
     int get_length();
 
+    /*
+    Added operations:
+    - value + array = [value, ...array...]
+    - array + value = [...array..., value]
+    - array - num = delete array[num]
+    - array[BEGIN] <- "" = init array with no values
+    - array? = array.length
+    */
     friend ArrayValue operator+(ArrayValue& val1, Value& val2);
     friend ArrayValue operator+(Value& val1, ArrayValue& val2);
     friend ArrayValue operator-(ArrayValue& val1, Value& val2);

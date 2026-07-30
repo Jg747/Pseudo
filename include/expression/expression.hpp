@@ -10,6 +10,7 @@
 
 class Expression {
 public:
+    Expression() {}
     Expression(std::vector<Token>& tokens);
     Expression(std::vector<Token>&& tokens);
     

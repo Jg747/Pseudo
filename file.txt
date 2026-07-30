@@ -1,5 +1,15 @@
 BEGIN
-    x <- "ciao"
-    x[1] <- ""
-    write x
+    x[BEGIN] <- ""
+    x <- x + 1
+    x <- x + 2
+    x <- x + 3
+    write "Prima dell'aggiunta: ", x, "\n"
+    x <- 15 + x
+    write "Dopo l'aggiunta: ", x, "\nStampa \"manuale\" (", x?, "): "
+    i <- 0
+    WHILE (i < x?)
+    BEGIN
+        write "[", i, "] ", x[i], " "
+        i <- i + 1
+    END
 END

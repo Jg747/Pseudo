@@ -1,27 +1,22 @@
 #ifndef __LOOP_HPP__
 #define __LOOP_HPP__
 
-#include "instruction.hpp"
-#include "../condition.hpp"
+#include "scopedinstruction.hpp"
+#include "expression/expression.hpp"
+#include "expression/variablecontext.hpp"
 
 #include <vector>
 
-class Loop : public Instruction {
+class Loop : public ScopedInstruction {
 protected:
-    std::vector<Instruction> instructions;
-    Condition condition;
+    Expression condition;
 
 public:
-    std::vector<Instruction>& get_instructions() const;
-    void add_instruction(Instruction& i);
-    void remove_instruction(Instruction& i);
-    void remove_instruction(int idx);
+    Loop() {}
+    Loop(Expression& condition) : condition(condition) {}
 
-    std::vector<Condition>& get_conditions() const;
-    void set_condition(std::vector<Condition>& conditions);
-    void add_condition(Condition condition);
-    
-    virtual bool test_condition() = 0;
+    void set_condition(Expression& condition);
+    bool test_condition(VariableContext& scoped_vars) const;
 };
 
 #endif // __LOOP_HPP__
