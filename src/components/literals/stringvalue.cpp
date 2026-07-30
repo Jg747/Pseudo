@@ -267,33 +267,6 @@ NumberValue operator!=(std::string val1, StringValue val2) {
     return v1 != v2;
 }
 
-std::shared_ptr<Value> StringValue::operator[](Value& idx) {
-    NumberValue v = (NumberValue) idx;
-    if (v.get_type() != numbertype_e::Integer) {
-        throw std::runtime_error("index not an integer");
-    }
-    
-    int val = v.get_int_value();
-    if (val < 0 || val >= this->len) {
-        throw std::runtime_error("index out of bounds (" + std::to_string(val) + ") for string '" + this->value + "'");
-    }
-    return StringValue(std::string(1, this->value[val])).clone();
-}
-
-StringValue& StringValue::operator=(Value& val) {
-    if (this != &val) {
-        StringValue v = (StringValue) val;
-        this->value = v.value;
-        this->len = v.len;
-    }
-    return *this;
-}
-
-StringValue::operator NumberValue() const {
-    std::string v = this->value;
-    return NumberValue(v);
-}
-
 NumberValue operator&&(StringValue val1, StringValue val2) {
     return val1.value.length() > 0 && val2.value.length() > 0;
 }
@@ -348,4 +321,31 @@ NumberValue operator||(std::string val1, StringValue val2) {
     StringValue v1 = StringValue(val1);
     StringValue v2 = val2;
     return v1 || v2;
+}
+
+std::shared_ptr<Value> StringValue::operator[](Value& idx) {
+    NumberValue v = (NumberValue) idx;
+    if (v.get_type() != numbertype_e::Integer) {
+        throw std::runtime_error("index not an integer");
+    }
+    
+    int val = v.get_int_value();
+    if (val < 0 || val >= this->len) {
+        throw std::runtime_error("index out of bounds (" + std::to_string(val) + ") for string '" + this->value + "'");
+    }
+    return StringValue(std::string(1, this->value[val])).clone();
+}
+
+StringValue& StringValue::operator=(Value& val) {
+    if (this != &val) {
+        StringValue v = (StringValue) val;
+        this->value = v.value;
+        this->len = v.len;
+    }
+    return *this;
+}
+
+StringValue::operator NumberValue() const {
+    std::string v = this->value;
+    return NumberValue(v);
 }

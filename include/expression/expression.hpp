@@ -17,7 +17,7 @@ public:
     std::vector<std::string>& req_vars() { return var_list; }
 
     static Expression parse_expression(const std::string& expression);
-    std::shared_ptr<Value> evaluate(const VariableContext& context) const;
+    std::shared_ptr<Value> evaluate(VariableContext& context) const;
     void validate() const;
 
 private:

@@ -23,8 +23,12 @@ public:
 
     int get_length();
 
-    std::shared_ptr<Value> operator[](int idx);
-    std::shared_ptr<Value> operator[](Value& idx);
+    friend ArrayValue operator+(ArrayValue& val1, Value& val2);
+    friend ArrayValue operator+(Value& val1, ArrayValue& val2);
+    friend ArrayValue operator-(ArrayValue& val1, Value& val2);
+
+    std::shared_ptr<Value>& operator[](int idx);
+    std::shared_ptr<Value>& operator[](Value& idx);
     ArrayValue& operator=(Value& val);
 
     virtual std::unique_ptr<Value> clone() const override;

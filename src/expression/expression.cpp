@@ -5,6 +5,7 @@
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/stringvalue.hpp"
 #include "components/literals/numbervalue.hpp"
+#include "lang.hpp"
 
 #include <stack>
 #include <cmath>
@@ -25,8 +26,11 @@ Expression::Expression(std::vector<Token>&& tokens) : tokens(tokens) {
     }
 }
 
-std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) const {
+std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
     std::stack<std::shared_ptr<Value>> values;
+    std::string assign_var = "";
+    bool assign = false;
+    int i;
 
     for (const Token& token : tokens) {
         switch (token.type) {
@@ -37,10 +41,25 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                 values.push(std::make_shared<StringValue>(token.text));
                 break;
             case token_t::Identifier: {
+                if (token.text == BEGIN_STR) {
+                    values.push(NumberValue(-1).clone());
+                    break;
+                }
+
                 auto value = context.get(token.text);
                 if (!value) {
                     throw std::runtime_error("Undefined variable");
                 }
+                
+                if (!assign) {
+                    assign = true;
+                    if (assign_var == "") {
+                        assign_var = token.text;
+                    } else {
+                        assign = false;
+                    }
+                }
+
                 values.push(value);
                 break;
             }
@@ -72,6 +91,7 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                 break;
             case token_t::ArrayIndex: {
                 NumberValue index = *values.top();
+                i = index.get_int_value();
                 values.pop();
 
                 if (dynamic_cast<ArrayValue*>(values.top().get())) {
@@ -86,13 +106,18 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                     Variable* var = values.top()->get_variable();
                     values.pop();
                     ArrayValue array;
-                    array.add_value(StringValue(""));
-                    while (index.get_int_value() >= array.get_length()) {
+                    if (index >= 0) {
                         array.add_value(StringValue(""));
+                        while (index.get_int_value() >= array.get_length()) {
+                            array.add_value(StringValue(""));
+                        }
+                        values.push(array[index]);
+                    } else {
+                        values.push(array.clone());
                     }
-                    values.push(array[index]);
                     var->set_value(array);
                 }
+                assign = false;
                 break;
             }
             case token_t::ArraySize: {
@@ -115,13 +140,21 @@ std::shared_ptr<Value> Expression::evaluate(const VariableContext& context) cons
                 values.pop();
 
                 if (dynamic_cast<ArrayValue*>(rhs.get())) {
-                    *((ArrayValue*) lhs.get()) = *rhs;
+                    lhs = ArrayValue(*rhs).clone();
                 } else if (dynamic_cast<NumberValue*>(rhs.get())) {
-                    *lhs = (NumberValue) *rhs;
+                    lhs = NumberValue(*rhs).clone();
                 } else {
-                    *lhs = *rhs;
+                    lhs = StringValue(*rhs).clone();
                 }
+                
                 values.push(lhs);
+                if (assign) {
+                    context.get_var(assign_var)->set_value(lhs);
+                } else {
+                    if (i >= 0) {
+                        (*context.get_var(assign_var)->get_array_value())[i] = lhs;
+                    }
+                }
                 break;
             }
             default:

@@ -485,7 +485,7 @@ bool AssignationAnalyzer::create_instruction() {
     try {
         auto l_vars = Expression::parse_expression(l).req_vars();
         if (l_vars.size() == 0) {
-            a->stop_interpreter("Error on lef side of expression (var to assign)");
+            a->stop_interpreter("Error on left side of expression (var to assign)");
             return false;
         }
         // la prima variabile e' sempre quella a cui viene assegnato il valore
@@ -495,7 +495,7 @@ bool AssignationAnalyzer::create_instruction() {
         Expression expr = Expression::parse_expression(l + " = " + r);
         a->get_instructions().push_back(std::make_unique<Assignation>(expr));
     } catch (std::runtime_error& e) {
-        a->stop_interpreter("Assignation error");
+        a->stop_interpreter("Assignation error: " + std::string(e.what()));
         return false;
     }
     return true;

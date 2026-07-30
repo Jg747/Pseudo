@@ -6,11 +6,14 @@ std::unique_ptr<Value> ArrayValue::clone() const {
 }
 
 ArrayValue::ArrayValue(const Value& val) {
-    std::string v = val.get_value();
-    set_value(v);
+    if (dynamic_cast<const ArrayValue*>(&val)) {
+        this->array = ((ArrayValue*) &val)->array;
+    } else {
+        array.push_back(val.clone());
+    }
 }
 
-std::shared_ptr<Value> ArrayValue::operator[](int idx) {
+std::shared_ptr<Value>& ArrayValue::operator[](int idx) {
     std::size_t index = idx;
     if (index < 0 || index >= array.size()) {
         throw std::runtime_error("index out of bounds (" + std::to_string(index) + ")");
@@ -18,7 +21,7 @@ std::shared_ptr<Value> ArrayValue::operator[](int idx) {
     return array[index];
 }
 
-std::shared_ptr<Value> ArrayValue::operator[](Value& idx) {
+std::shared_ptr<Value>& ArrayValue::operator[](Value& idx) {
     NumberValue v = (NumberValue) idx;
     if (v.get_type() != numbertype_e::Integer) {
         throw std::runtime_error("index not an integer");
@@ -66,4 +69,44 @@ ArrayValue& ArrayValue::operator=(Value& val) {
         this->array = v->array;
     }
     return *this;
+}
+
+ArrayValue operator+(ArrayValue& val1, Value& val2) {
+    if (dynamic_cast<ArrayValue*>(&val2)) {
+        ArrayValue* arr = (ArrayValue*) &val2;
+        for (int i = 0; i < arr->get_length(); i++) {
+            val1.add_value((*arr)[i]);
+        }
+        return val1;
+    }
+    val1.add_value(val2);
+    return val1;
+}
+
+ArrayValue operator+(Value& val1, ArrayValue& val2) {
+    if (dynamic_cast<ArrayValue*>(&val1)) {
+        ArrayValue* arr = (ArrayValue*) &val1;
+        for (int i = 0; i < val2.get_length(); i++) {
+            arr->add_value(val2[i]);
+        }
+        return *((ArrayValue*) &val1);
+    }
+    val2.array.insert(val2.array.begin(), val1.clone());
+    return val2;
+}
+
+ArrayValue operator-(ArrayValue& val1, Value& val2) {
+    NumberValue number(val2);
+
+    if (number.get_type() != numbertype_e::Integer) {
+        throw std::runtime_error("index not integer (" + number.get_value() + ")");
+    }
+
+    size_t index = number.get_int_value();
+    if (index < 0 || index >= val1.array.size()) {
+        throw std::runtime_error("index out of bounds (" + std::to_string(index) + ")");
+    }
+
+    val1.array.erase(val1.array.begin() + index);
+    return val1;
 }
