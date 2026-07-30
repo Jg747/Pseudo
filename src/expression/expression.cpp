@@ -150,9 +150,25 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                 values.push(lhs);
                 if (assign) {
                     context.get_var(assign_var)->set_value(lhs);
-                } else {
-                    if (i >= 0) {
-                        (*context.get_var(assign_var)->get_array_value())[i] = lhs;
+                } else if (i >= 0) {
+                    Value* var = context.get_var(assign_var)->get_value().get();
+                    if (dynamic_cast<ArrayValue*>(var)) {
+                        (*((ArrayValue*) var))[i] = lhs;
+                    } else if (dynamic_cast<StringValue*>(var)) {
+                        StringValue* v = (StringValue*) var;
+                        std::string s = v->get_value();
+                        std::string new_val = lhs->get_value();
+                        if (new_val.length() > 1) {
+                            throw std::runtime_error("Invalid value provided ('" + new_val + "')");
+                        }
+                        if (new_val.length() == 0) {
+                            s.erase(s.begin() + i);
+                        } else {
+                            s[i] = new_val[0];
+                        }
+                        v->set_value(s);
+                    } else {
+                        throw std::runtime_error("Can't apply index to this type of value");
                     }
                 }
                 break;

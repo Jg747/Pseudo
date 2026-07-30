@@ -1,5 +1,5 @@
 BEGIN
     x <- "ciao"
-    x[1] <- "a"
+    x[1] <- ""
     write x
 END
