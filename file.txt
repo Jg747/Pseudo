@@ -1,3 +1,10 @@
 BEGIN
-    
+    x[BEGIN] <- ""
+    x <- x + 1
+    x <- x + 2
+    x <- x + 3
+    write x, "\n"
+
+    y[5] <- "3"
+    write y
 END

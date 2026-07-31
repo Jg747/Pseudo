@@ -26,6 +26,21 @@ private:
     std::vector<Token> tokens;
     std::vector<std::string> var_list;
 
+    std::string assign_var;
+    bool assign;
+    bool begin_str;
+    int i;
+    std::vector<int> indexing_depth;
+    ArrayValue* arr;
+    int init_arr;
+
+    void init();
+    void index_op(std::stack<std::shared_ptr<Value>>& values);
+    void assign_op(std::stack<std::shared_ptr<Value>>& values, VariableContext& context);
+    void identifier_op(const Token& token, std::stack<std::shared_ptr<Value>>& values, VariableContext& context);
+    void unaryminus_op(std::stack<std::shared_ptr<Value>>& values);
+    void arraysize_op(std::stack<std::shared_ptr<Value>>& values);
+    void init_copy_array(std::stack<std::shared_ptr<Value>>& values);
     void operation(std::stack<std::shared_ptr<Value>>& values, const Token& token) const;
     void assign_deep_index(ArrayValue* value, std::shared_ptr<Value>& val, std::vector<int> indexes, size_t depth);
 };

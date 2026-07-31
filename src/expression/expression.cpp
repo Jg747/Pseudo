@@ -29,16 +29,188 @@ Expression::Expression(std::vector<Token>&& tokens) : tokens(tokens) {
     }
 }
 
+void Expression::init() {
+    assign_var = "";
+    assign = false;
+    begin_str = false;
+    arr = nullptr;
+    init_arr = -1;
+
+    indexing_depth = std::vector<int>();
+}
+
+void Expression::index_op(std::stack<std::shared_ptr<Value>>& values) {
+    NumberValue index = *values.top();
+    i = index.get_int_value();
+    values.pop();
+    indexing_depth.push_back(i);
+
+    if (dynamic_cast<ArrayValue*>(values.top().get()) && !begin_str) {
+        ArrayValue array = *((ArrayValue*) values.top().get());
+        values.pop();
+        values.push(array[index]);
+    } else if (dynamic_cast<StringValue*>(values.top().get())) {
+        StringValue str = *((StringValue*) values.top().get());
+        values.pop();
+        values.push(str[index]);
+    } else if (dynamic_cast<NullValue*>(values.top().get()) || begin_str) {
+        Variable* var = values.top()->get_variable();
+        values.pop();
+        ArrayValue array;
+        if (index >= 0) {
+            array.add_value(NullValue());
+            while (index.get_int_value() >= array.get_length()) {
+                array.add_value(NullValue());
+            }
+
+            values.push(array[index]);
+            init_arr = i;
+        } else {
+            values.push(array.clone());
+        }
+                    
+        var->set_value(array);
+        if (init_arr != -1) {
+            arr = var->get_array_value().get();
+        }
+    } else {
+        throw std::runtime_error("Can't apply index to this type of value");
+    }
+
+    assign = false;
+}
+
+void Expression::assign_op(std::stack<std::shared_ptr<Value>>& values, VariableContext& context) {
+    std::shared_ptr<Value> rhs = values.top();
+    values.pop();
+
+    std::shared_ptr<Value> lhs = values.top();
+    values.pop();
+
+    if (dynamic_cast<ArrayValue*>(rhs.get())) {
+        lhs = ArrayValue(*rhs).clone();
+    } else if (dynamic_cast<NumberValue*>(rhs.get())) {
+        lhs = NumberValue(*rhs).clone();
+    } else {
+        lhs = StringValue(*rhs).clone();
+    }
+                
+    values.push(lhs);
+    if (assign) {
+        context.get_var(assign_var)->set_value(lhs);
+    } else if (i >= 0) {
+        Value* var = context.get_var(assign_var)->get_value().get();
+        if (dynamic_cast<ArrayValue*>(var)) {
+            // (*((ArrayValue*) var))[i] = lhs; //
+            assign_deep_index((ArrayValue*) var, lhs, indexing_depth, 0);
+        } else if (dynamic_cast<StringValue*>(var)) {
+            StringValue* v = (StringValue*) var;
+            std::string s = v->get_value();
+            std::string new_val = lhs->get_value();
+            if (new_val.length() > 1) {
+                throw std::runtime_error("Invalid value provided ('" + new_val + "')");
+            }
+            if (new_val.length() == 0) {
+                s.erase(s.begin() + i);
+            } else {
+                s[i] = new_val[0];
+            }
+            v->set_value(s);
+        } else {
+            throw std::runtime_error("Can't apply index to this type of value");
+        }
+    }
+}
+
+void Expression::identifier_op(const Token& token, std::stack<std::shared_ptr<Value>>& values, VariableContext& context) {
+    if (token.text == BEGIN_STR) {
+        values.push(NumberValue(-1).clone());
+        begin_str = true;
+        return;
+    }
+
+    auto value = context.get(token.text);
+    if (!value) {
+        throw std::runtime_error("Undefined variable");
+    }
+                
+    if (!assign) {
+        assign = true;
+        if (assign_var == "") {
+            assign_var = token.text;
+        } else {
+            assign = false;
+        }
+    }
+
+    values.push(value);
+}
+
+void Expression::unaryminus_op(std::stack<std::shared_ptr<Value>>& values) {
+    if (values.empty()) {
+        throw std::runtime_error("Missing operand.");
+    }
+
+    std::shared_ptr<Value> value = values.top();
+    values.pop();
+
+    values.push((NumberValue(0) - *value).clone());
+}
+
+void Expression::arraysize_op(std::stack<std::shared_ptr<Value>>& values) {
+    if (dynamic_cast<ArrayValue*>(values.top().get())) {
+        ArrayValue array = *((ArrayValue*) values.top().get());
+        values.pop();
+        values.push(NumberValue(array.get_length()).clone());
+    } else if (dynamic_cast<StringValue*>(values.top().get())) {
+        StringValue str = *((StringValue*) values.top().get());
+        values.pop();
+        values.push(NumberValue(str.get_len()).clone());
+    }
+    throw std::runtime_error("Can't apply size to this type of value");
+}
+
+void Expression::init_copy_array(std::stack<std::shared_ptr<Value>>& values) {
+    /*
+        type:
+            0: String
+            1: Array
+            2: Number
+    */
+    
+    int type;
+    Value* v = values.top().get();
+
+    if (dynamic_cast<StringValue*>(v)) {
+        type = 0;
+    } else if (dynamic_cast<ArrayValue*>(v)) {
+        type = 1;
+    } else if (dynamic_cast<NumberValue*>(v)) {
+        type = 2;
+    } else {
+        throw std::runtime_error("Invalid value provided in array copy initialization");
+    }
+
+    for (int i = 0; i < init_arr; i++) {
+        switch (type) {
+            case 0:
+                (*arr)[i] = StringValue(*((StringValue*) v)).clone();
+                break;
+            case 1:
+                (*arr)[i] = ArrayValue(*((ArrayValue*) v)).clone();
+                break;
+            case 2:
+                (*arr)[i] = NumberValue(*((NumberValue*) v)).clone();
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
     std::stack<std::shared_ptr<Value>> values;
-    std::string assign_var = "";
-    bool assign = false;
-    bool begin_str = false;
-    int i;
-    std::vector<int> indexing_depth;
-
-    ArrayValue* arr;
-    int init_arr = -1;
+    init();
 
     for (const Token& token : tokens) {
         switch (token.type) {
@@ -49,38 +221,11 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
                 values.push(std::make_shared<StringValue>(token.text));
                 break;
             case token_t::Identifier: {
-                if (token.text == BEGIN_STR) {
-                    values.push(NumberValue(-1).clone());
-                    begin_str = true;
-                    break;
-                }
-
-                auto value = context.get(token.text);
-                if (!value) {
-                    throw std::runtime_error("Undefined variable");
-                }
-                
-                if (!assign) {
-                    assign = true;
-                    if (assign_var == "") {
-                        assign_var = token.text;
-                    } else {
-                        assign = false;
-                    }
-                }
-
-                values.push(value);
+                identifier_op(token, values, context);
                 break;
             }
             case token_t::UnaryMinus: {
-                if (values.empty()) {
-                    throw std::runtime_error("Missing operand.");
-                }
-
-                std::shared_ptr<Value> value = values.top();
-                values.pop();
-
-                values.push((NumberValue(0) - *value).clone());
+                unaryminus_op(values);
                 break;
             }
             case token_t::Plus:
@@ -99,96 +244,15 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
                 operation(values, token);
                 break;
             case token_t::ArrayIndex: {
-                NumberValue index = *values.top();
-                i = index.get_int_value();
-                values.pop();
-                indexing_depth.push_back(i);
-
-                if (dynamic_cast<ArrayValue*>(values.top().get()) && !begin_str) {
-                    ArrayValue array = *((ArrayValue*) values.top().get());
-                    values.pop();
-                    values.push(array[index]);
-                } else if (dynamic_cast<StringValue*>(values.top().get())) {
-                    StringValue str = *((StringValue*) values.top().get());
-                    values.pop();
-                    values.push(str[index]);
-                } else if (dynamic_cast<NullValue*>(values.top().get()) || begin_str) {
-                    Variable* var = values.top()->get_variable();
-                    values.pop();
-                    ArrayValue array;
-                    if (index >= 0) {
-                        array.add_value(NullValue());
-                        while (index.get_int_value() >= array.get_length()) {
-                            array.add_value(NullValue());
-                        }
-                        values.push(array[index]);
-                        init_arr = i;
-                    } else {
-                        values.push(array.clone());
-                    }
-                    
-                    var->set_value(array);
-                    if (init_arr != -1) {
-                        arr = var->get_array_value().get();
-                    }
-                } else {
-                    throw std::runtime_error("Can't apply index to this type of value");
-                }
-                assign = false;
+                index_op(values);
                 break;
             }
             case token_t::ArraySize: {
-                if (dynamic_cast<ArrayValue*>(values.top().get())) {
-                    ArrayValue array = *((ArrayValue*) values.top().get());
-                    values.pop();
-                    values.push(NumberValue(array.get_length()).clone());
-                } else if (dynamic_cast<StringValue*>(values.top().get())) {
-                    StringValue str = *((StringValue*) values.top().get());
-                    values.pop();
-                    values.push(NumberValue(str.get_len()).clone());
-                }
+                arraysize_op(values);
                 break;
             }
             case token_t::Assign: {
-                std::shared_ptr<Value> rhs = values.top();
-                values.pop();
-
-                std::shared_ptr<Value> lhs = values.top();
-                values.pop();
-
-                if (dynamic_cast<ArrayValue*>(rhs.get())) {
-                    lhs = ArrayValue(*rhs).clone();
-                } else if (dynamic_cast<NumberValue*>(rhs.get())) {
-                    lhs = NumberValue(*rhs).clone();
-                } else {
-                    lhs = StringValue(*rhs).clone();
-                }
-                
-                values.push(lhs);
-                if (assign) {
-                    context.get_var(assign_var)->set_value(lhs);
-                } else if (i >= 0) {
-                    Value* var = context.get_var(assign_var)->get_value().get();
-                    if (dynamic_cast<ArrayValue*>(var)) {
-                        // (*((ArrayValue*) var))[i] = lhs; //
-                        assign_deep_index((ArrayValue*) var, lhs, indexing_depth, 0);
-                    } else if (dynamic_cast<StringValue*>(var)) {
-                        StringValue* v = (StringValue*) var;
-                        std::string s = v->get_value();
-                        std::string new_val = lhs->get_value();
-                        if (new_val.length() > 1) {
-                            throw std::runtime_error("Invalid value provided ('" + new_val + "')");
-                        }
-                        if (new_val.length() == 0) {
-                            s.erase(s.begin() + i);
-                        } else {
-                            s[i] = new_val[0];
-                        }
-                        v->set_value(s);
-                    } else {
-                        throw std::runtime_error("Can't apply index to this type of value");
-                    }
-                }
+                assign_op(values, context);
                 break;
             }
             default:
@@ -197,29 +261,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
     }
 
     if (init_arr != -1) {
-        int type = 0;
-        Value* v = values.top().get();
-        if (dynamic_cast<ArrayValue*>(v)) {
-            type = 1;
-        } else if (dynamic_cast<NumberValue*>(v)) {
-            type = 2;
-        }
-
-        for (int i = 0; i < init_arr; i++) {
-            switch (type) {
-                case 0:
-                    (*arr)[i] = StringValue(*((StringValue*) v)).clone();
-                    break;
-                case 1:
-                    (*arr)[i] = ArrayValue(*((ArrayValue*) v)).clone();
-                    break;
-                case 2:
-                    (*arr)[i] = NumberValue(*((NumberValue*) v)).clone();
-                    break;
-                default:
-                    break;
-            }
-        }
+        init_copy_array(values);
     }
 
     if (values.size() != 1) {

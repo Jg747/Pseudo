@@ -27,29 +27,5 @@ int main(int argc, char** argv) {
         cout << "\nNON OK!";
     }
 
-    /*if (argc != 2) {
-        return 1;
-    }*/
-    /*Lexer l;
-    std::vector<Token> tokens = l.tokenize(std::string(argv[1]));
-    Parser p;
-    Expression e = p.parse(tokens);
-    auto tokens2 = e.rpn();
-    for (auto t : tokens2) {
-        std::cout << t << std::endl;
-    }*/
-    /*Expression e = Expression::parse_expression(std::string(argv[1]));
-
-    VariableContext v;
-    ArrayValue arr;
-    arr.add_value(NumberValue(5));
-    arr.add_value(NumberValue(10));
-    arr.add_value(NumberValue(15));
-    Variable ciao(std::string("ciao"), arr);
-    Variable thomas(std::string("thomas"), StringValue("Brotherro"));
-    v.set(std::make_shared<Variable>(ciao));
-    v.set(std::make_shared<Variable>(thomas));
-    std::cout << e.evaluate(v)->get_value();*/
-
     return 0;
 }
