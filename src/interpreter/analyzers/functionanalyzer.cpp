@@ -1,7 +1,7 @@
 #ifndef __FUNCTIONANALYZER_HPP__
 #define __FUNCTIONANALYZER_HPP__
 
-#include "components/function.hpp"
+#include "components/literals/function.hpp"
 #include "interpreter/analyzers/analyzer.hpp"
 #include "interpreter/analyzers/functionanalyzer.hpp"
 

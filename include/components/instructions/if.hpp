@@ -4,15 +4,16 @@
 #include "scopedinstruction.hpp"
 #include "instruction.hpp"
 #include "expression/expression.hpp"
+#include "expression/variablecontext.hpp"
 
 #include <list>
 #include <vector>
 
 struct sequence {
     Expression condition;
-    std::list<Instruction> instructions;
+    std::list<std::unique_ptr<Instruction>> instructions;
 
-    bool test_condition();
+    bool test_condition(VariableContext& scoped_vars);
 };
 
 class If : public ScopedInstruction {
@@ -22,11 +23,13 @@ private:
     void abstract() override {}
 
 public:
-    std::vector<sequence>& get_cases() const;
-    void add_sequence(sequence& s);
+    If() {}
+    
+    void add_sequence(Expression& condition);
+    void add_instruction(std::unique_ptr<Instruction>& i) override;
+    Instruction* get_last_instruction();
 
-    sequence get_sequence(int idx) const;
-    std::size_t cases_count() const;
+    void execute(VariableContext& scoped_vars) override;
 };
 
 #endif // __IF_HPP__

@@ -30,6 +30,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
     std::stack<std::shared_ptr<Value>> values;
     std::string assign_var = "";
     bool assign = false;
+    bool begin_str = false;
     int i;
 
     for (const Token& token : tokens) {
@@ -43,6 +44,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
             case token_t::Identifier: {
                 if (token.text == BEGIN_STR) {
                     values.push(NumberValue(-1).clone());
+                    begin_str = true;
                     break;
                 }
 
@@ -94,7 +96,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                 i = index.get_int_value();
                 values.pop();
 
-                if (dynamic_cast<ArrayValue*>(values.top().get())) {
+                if (dynamic_cast<ArrayValue*>(values.top().get()) && !begin_str) {
                     ArrayValue array = *((ArrayValue*) values.top().get());
                     values.pop();
                     values.push(array[index]);
@@ -102,7 +104,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                     StringValue str = *((StringValue*) values.top().get());
                     values.pop();
                     values.push(str[index]);
-                } else if (dynamic_cast<NumberValue*>(values.top().get())) {
+                } else if (dynamic_cast<NumberValue*>(values.top().get()) || begin_str) {
                     Variable* var = values.top()->get_variable();
                     values.pop();
                     ArrayValue array;

@@ -16,7 +16,7 @@ public:
     Loop(Expression& condition) : condition(condition) {}
 
     void set_condition(Expression& condition);
-    bool test_condition(VariableContext& scoped_vars) const;
+    bool test_condition(VariableContext& scoped_vars);
 };
 
 #endif // __LOOP_HPP__

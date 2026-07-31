@@ -1,15 +1,30 @@
 BEGIN
-    x[BEGIN] <- ""
-    x <- x + 1
-    x <- x + 2
-    x <- x + 3
-    write "Prima dell'aggiunta: ", x, "\n"
-    x <- 15 + x
-    write "Dopo l'aggiunta: ", x, "\nStampa \"manuale\" (", x?, "): "
-    i <- 0
-    WHILE (i < x?)
-    BEGIN
-        write "[", i, "] ", x[i], " "
-        i <- i + 1
-    END
+    read x
+    IF (x < 5) THEN
+        write "x < 5"
+        write "\nmiao"
+    ELIF (x == 5) THEN
+        REPEAT
+            read x
+            IF (x == "asd") THEN
+                y[BEGIN] <- ""
+                y <- y + 1
+                y <- y + 2
+                y <- y + 3
+                i <- 0
+                WHILE (i < y?)
+                BEGIN
+                    write y[i]
+                    i <- i + 1
+                END
+            ENDIF
+        UNTIL (x != "ciao")
+        write "fatto"
+    ELIF (x == 6) THEN
+        write x, "\n"
+    ELSE
+        write "x > 6"
+        write "\nciao"
+    ENDIF
+    write "\nend"
 END

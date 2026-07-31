@@ -5,7 +5,9 @@
 #include "lang.hpp"
 #include "expression/expression.hpp"
 #include "components/instructions/instruction.hpp"
+#include "components/instructions/while.hpp"
 #include "components/instructions/dowhile.hpp"
+#include "components/instructions/if.hpp"
 
 #include <string>
 #include <vector>
@@ -52,6 +54,7 @@ private:
     bool analyze_instruction();
     bool prev_instr_is_assign();
     add_instruction_ret add_cur_instruction(std::optional<tokens_e>& token);
+    Instruction* get_deepest_instruction(Instruction* i, size_t deep);
 
     template<class T>
     T* get_cur_instruction_top_ptr();
@@ -82,8 +85,8 @@ public:
     void pop_next();
 
     std::list<std::unique_ptr<Instruction>>& get_instructions();
-    void add_instruction(std::unique_ptr<Instruction>& i);
-    void add_instruction(std::unique_ptr<Instruction>&& i);
+    Instruction* add_instruction(std::unique_ptr<Instruction>& i);
+    Instruction* add_instruction(std::unique_ptr<Instruction>&& i);
     std::vector<std::string>& get_var_list();
     void add_variable(std::string& var_name);
 };
@@ -136,6 +139,7 @@ class WhileAnalyzer : public InstructionAnalyzer {
 private:
     enum class states_e { BODY_BEGIN, WAIT_END, BODY_END };
     WhileAnalyzer::states_e state;
+    While* pointer;
 
     bool create_instruction() override;
 
@@ -150,6 +154,7 @@ private:
     enum class states_e { COND_START, THEN, BODY, ELSE, ELIF, ENDIF };
     IfAnalyzer::states_e state;
     char section_type;
+    If* pointer;
     
     bool analyze_condition();
     bool create_instruction() override;

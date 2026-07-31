@@ -30,7 +30,6 @@ function syntax support
 
 const char* SyntaxAnalyzer::whitespaces = " \n\t";
 const std::regex SyntaxAnalyzer::var_regex(ALLOWED_VARS_CHARS);
-//std::unordered_map<std::string, tokens_e> SyntaxAnalyzer::keywords;
 std::unordered_map<tokens_e, std::regex> SyntaxAnalyzer::keywords;
 
 
@@ -62,17 +61,50 @@ std::list<std::unique_ptr<Instruction>>& SyntaxAnalyzer::get_instructions() {
     return instructions;
 }
 
-void SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>& i) {
-    auto last = instructions.back().get();
+Instruction* SyntaxAnalyzer::get_deepest_instruction(Instruction* i, size_t deep) {
+    size_t size = cur_instruction.size() - 1;
+    if (size == 0) {
+        return nullptr;
+    }
+    
+    if (deep == size) {
+        return i;
+    }
+
+    if (dynamic_cast<If*>(i)) {
+        auto ret = get_deepest_instruction(((If*) i)->get_last_instruction(), deep + 1);
+        if (!ret) {
+            return i;
+        }
+        return ret;
+    } else if (dynamic_cast<ScopedInstruction*>(i)) {
+        auto ret = get_deepest_instruction(((ScopedInstruction*) i)->get_instructions().back().get(), deep + 1);
+        if (!ret) {
+            return i;
+        }
+        return ret;
+    }
+    return nullptr;
+}
+
+Instruction* SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>& i) {
+    Instruction* ret = i.get();
+    //auto last = instructions.back().get();
+    auto last = get_deepest_instruction(instructions.back().get(), 1);
     if (dynamic_cast<ScopedInstruction*>(last)) {
-        ((ScopedInstruction*) last)->add_instruction(i);
+        if (dynamic_cast<If*>(last)) {
+            ((If*) last)->add_instruction(i);
+        } else {
+            ((ScopedInstruction*) last)->add_instruction(i);
+        }
     } else {
         instructions.push_back(std::move(i));
     }
+    return ret;
 }
 
-void SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>&& i) {
-    this->add_instruction((std::unique_ptr<Instruction>&) i);
+Instruction* SyntaxAnalyzer::add_instruction(std::unique_ptr<Instruction>&& i) {
+    return this->add_instruction((std::unique_ptr<Instruction>&) i);
 }
 
 std::vector<std::string>& SyntaxAnalyzer::get_var_list() {
@@ -526,8 +558,7 @@ bool AssignationAnalyzer::create_instruction() {
 
 bool UntilAnalyzer::analyze_syntax() {
     init_state();
-    a->add_instruction(std::make_unique<DoWhile>());
-    pointer = (DoWhile*) a->get_instructions().back().get();
+    pointer = (DoWhile*) a->add_instruction(std::make_unique<DoWhile>());
 
     if (!a->analyze_tokens()) {
         return false;
@@ -650,7 +681,7 @@ bool WhileAnalyzer::create_instruction() {
     try {
         auto expr = get_condition();
         if (expr.has_value()) {
-            a->add_instruction(std::make_unique<While>(expr.value()));
+            pointer = (While*) a->add_instruction(std::make_unique<While>(expr.value()));
         } else {
             throw std::runtime_error("get_condition() returned no value");
         }
@@ -666,6 +697,8 @@ bool WhileAnalyzer::create_instruction() {
 
 bool IfAnalyzer::analyze_syntax() {
     init_state();
+
+    create_instruction();
     
     if (!analyze_condition()) {
         return false;
@@ -737,6 +770,8 @@ bool IfAnalyzer::next_state(tokens_e token) {
                 (*cur_index)--;
             } else if (section_type == 0) {
                 state = IfAnalyzer::states_e::ELSE;
+                Expression e = Expression::parse_expression("1");
+                pointer->add_sequence(e);
             } else {
                 if (token != tokens_e::ENDIF) {
                     a->stop_interpreter("missing " + std::string(ENDIF_STR) + " token");
@@ -746,13 +781,14 @@ bool IfAnalyzer::next_state(tokens_e token) {
             }
             section_type = -2;
             break;
-        case IfAnalyzer::states_e::ELSE:
+        case IfAnalyzer::states_e::ELSE: {
             if (token != tokens_e::ENDIF) {
                 a->stop_interpreter("missing " + std::string(ENDIF_STR) + " token");
                 return false;
             }
             state = IfAnalyzer::states_e::ENDIF;
             break;
+        }
         default:
             break;
     }
@@ -766,6 +802,11 @@ void IfAnalyzer::set_section(char section) {
 bool IfAnalyzer::analyze_condition() {
     try {
         auto expr = get_condition();
+        if (expr.has_value()) {
+            pointer->add_sequence(expr.value());
+        } else {
+            throw std::runtime_error("get_condition() returned no value");
+        }
     } catch (std::runtime_error& e) {
         a->stop_interpreter("Error in condition");
         return false;
@@ -774,7 +815,10 @@ bool IfAnalyzer::analyze_condition() {
     return true;
 }
 
-bool IfAnalyzer::create_instruction() {}
+bool IfAnalyzer::create_instruction() {
+    pointer = (If*) a->add_instruction(std::make_unique<If>());
+    return true;
+}
 
 
 

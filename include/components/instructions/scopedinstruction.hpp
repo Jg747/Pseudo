@@ -13,8 +13,9 @@ protected:
     virtual void abstract() = 0;
 
 public:
+    ScopedInstruction() {}
     std::list<std::unique_ptr<Instruction>>& get_instructions();
-    void add_instruction(std::unique_ptr<Instruction>& i);
+    virtual void add_instruction(std::unique_ptr<Instruction>& i);
 };
 
 #endif /* __SCOPED_INSTRUCTION_HPP__ */

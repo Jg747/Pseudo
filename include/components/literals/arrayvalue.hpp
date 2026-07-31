@@ -29,6 +29,7 @@ public:
     - array + value = [...array..., value]
     - array - num = delete array[num]
     - array[BEGIN] <- "" = init array with no values
+    - array[MAX_INDEX] <- <value> = init array with [0, ..., MAX_INDEX] = <value>
     - array? = array.length
     */
     friend ArrayValue operator+(ArrayValue& val1, Value& val2);

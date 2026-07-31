@@ -2,7 +2,7 @@
 #define __FUNCTIONANALYZER_HPP__
 
 #include "analyzer.hpp"
-#include "components/function.hpp"
+#include "components/literals/function.hpp"
 
 #include <unordered_map>
 

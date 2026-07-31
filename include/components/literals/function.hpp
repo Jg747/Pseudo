@@ -1,8 +1,8 @@
 #ifndef __FUNCTION_HPP__
 #define __FUNCTION_HPP__
 
-#include "instructions/instruction.hpp"
-#include "literals/variable.hpp"
+#include "components/instructions/instruction.hpp"
+#include "components/literals/variable.hpp"
 
 #include <string>
 #include <vector>

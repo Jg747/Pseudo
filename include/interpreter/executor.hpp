@@ -3,6 +3,8 @@
 
 #include "components/instructions/instruction.hpp"
 #include "components/literals/variable.hpp"
+#include "expression/expression.hpp"
+#include "expression/variablecontext.hpp"
 
 #include <string>
 #include <list>
@@ -15,7 +17,10 @@ private:
     // TODO quando implementate le Functions spostare le seguenti proprietà per le funzioni
     std::list<std::unique_ptr<Instruction>> list;
     VariableContext scoped_vars;
+
 public:
+    static bool test_condition(Expression& condition, VariableContext& scoped_vars);
+    
     Executor(std::list<std::unique_ptr<Instruction>>& list, std::vector<std::string> var_list);
     void start_pgm();
 };

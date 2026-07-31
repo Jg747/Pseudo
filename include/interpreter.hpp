@@ -1,7 +1,7 @@
 #ifndef __INTERPRETER_HPP__
 #define __INTERPRETER_HPP__
 
-#include "components/function.hpp"
+#include "components/literals/function.hpp"
 #include "components/literals/variable.hpp"
 #include "components/literals/value.hpp"
 
