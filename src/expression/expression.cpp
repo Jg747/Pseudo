@@ -5,10 +5,13 @@
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/stringvalue.hpp"
 #include "components/literals/numbervalue.hpp"
+#include "components/literals/nullvalue.hpp"
 #include "lang.hpp"
 
 #include <stack>
 #include <cmath>
+#include <vector>
+#include <memory>
 
 Expression::Expression(std::vector<Token>& tokens) : tokens(tokens) {
     for (auto& t : tokens) {
@@ -26,12 +29,13 @@ Expression::Expression(std::vector<Token>&& tokens) : tokens(tokens) {
     }
 }
 
-std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
+std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
     std::stack<std::shared_ptr<Value>> values;
     std::string assign_var = "";
     bool assign = false;
     bool begin_str = false;
     int i;
+    std::vector<int> indexing_depth;
 
     ArrayValue* arr;
     int init_arr = -1;
@@ -98,6 +102,7 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                 NumberValue index = *values.top();
                 i = index.get_int_value();
                 values.pop();
+                indexing_depth.push_back(i);
 
                 if (dynamic_cast<ArrayValue*>(values.top().get()) && !begin_str) {
                     ArrayValue array = *((ArrayValue*) values.top().get());
@@ -107,14 +112,14 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                     StringValue str = *((StringValue*) values.top().get());
                     values.pop();
                     values.push(str[index]);
-                } else if (dynamic_cast<NumberValue*>(values.top().get()) || begin_str) {
+                } else if (dynamic_cast<NullValue*>(values.top().get()) || begin_str) {
                     Variable* var = values.top()->get_variable();
                     values.pop();
                     ArrayValue array;
                     if (index >= 0) {
-                        array.add_value(StringValue(""));
+                        array.add_value(NullValue());
                         while (index.get_int_value() >= array.get_length()) {
-                            array.add_value(StringValue(""));
+                            array.add_value(NullValue());
                         }
                         values.push(array[index]);
                         init_arr = i;
@@ -126,6 +131,8 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                     if (init_arr != -1) {
                         arr = var->get_array_value().get();
                     }
+                } else {
+                    throw std::runtime_error("Can't apply index to this type of value");
                 }
                 assign = false;
                 break;
@@ -163,7 +170,8 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                 } else if (i >= 0) {
                     Value* var = context.get_var(assign_var)->get_value().get();
                     if (dynamic_cast<ArrayValue*>(var)) {
-                        (*((ArrayValue*) var))[i] = lhs;
+                        // (*((ArrayValue*) var))[i] = lhs; //
+                        assign_deep_index((ArrayValue*) var, lhs, indexing_depth, 0);
                     } else if (dynamic_cast<StringValue*>(var)) {
                         StringValue* v = (StringValue*) var;
                         std::string s = v->get_value();
@@ -320,4 +328,12 @@ Expression Expression::parse_expression(const std::string& expression) {
     std::vector<Token> tokens = l.tokenize(expression);
     Parser p;
     return p.parse(tokens);
+}
+
+void Expression::assign_deep_index(ArrayValue* value, std::shared_ptr<Value>& val, std::vector<int> indexes, size_t depth) {
+    if (depth == indexes.size() - 1) {
+        (*value)[indexes[depth]] = val;
+        return;
+    }
+    assign_deep_index((ArrayValue*) (*value)[indexes[depth]].get(), val, indexes, depth + 1);
 }

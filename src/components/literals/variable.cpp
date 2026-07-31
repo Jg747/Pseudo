@@ -2,6 +2,7 @@
 #include "components/literals/value.hpp"
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/numbervalue.hpp"
+#include "components/literals/nullvalue.hpp"
 #include "lang.hpp"
 
 #include <string>
@@ -19,14 +20,14 @@ Variable::Variable(std::string& name) : Variable() {
     this->name = name;
     is_arr = false;
 
-    set_value(NumberValue(0));
+    set_value(NullValue());
 }
 
 Variable::Variable(std::string&& name) : Variable() {
     this->name = name;
     is_arr = false;
 
-    set_value(NumberValue(0));
+    set_value(NullValue());
 }
 
 Variable::Variable(std::string& name, Value& val) : Variable(name) {

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <memory>
 
 #include "lexer.hpp"
 #include "variablecontext.hpp"
@@ -18,7 +19,7 @@ public:
     std::vector<std::string>& req_vars() { return var_list; }
 
     static Expression parse_expression(const std::string& expression);
-    std::shared_ptr<Value> evaluate(VariableContext& context) const;
+    std::shared_ptr<Value> evaluate(VariableContext& context);
     void validate() const;
 
 private:
@@ -26,6 +27,7 @@ private:
     std::vector<std::string> var_list;
 
     void operation(std::stack<std::shared_ptr<Value>>& values, const Token& token) const;
+    void assign_deep_index(ArrayValue* value, std::shared_ptr<Value>& val, std::vector<int> indexes, size_t depth);
 };
 
 #endif // __EXPRESSION_HPP__
