@@ -33,6 +33,9 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
     bool begin_str = false;
     int i;
 
+    ArrayValue* arr;
+    int init_arr = -1;
+
     for (const Token& token : tokens) {
         switch (token.type) {
             case token_t::Number:
@@ -114,10 +117,15 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
                             array.add_value(StringValue(""));
                         }
                         values.push(array[index]);
+                        init_arr = i;
                     } else {
                         values.push(array.clone());
                     }
+                    
                     var->set_value(array);
+                    if (init_arr != -1) {
+                        arr = var->get_array_value().get();
+                    }
                 }
                 assign = false;
                 break;
@@ -180,14 +188,36 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) const {
         }
     }
 
+    if (init_arr != -1) {
+        int type = 0;
+        Value* v = values.top().get();
+        if (dynamic_cast<ArrayValue*>(v)) {
+            type = 1;
+        } else if (dynamic_cast<NumberValue*>(v)) {
+            type = 2;
+        }
+
+        for (int i = 0; i < init_arr; i++) {
+            switch (type) {
+                case 0:
+                    (*arr)[i] = StringValue(*((StringValue*) v)).clone();
+                    break;
+                case 1:
+                    (*arr)[i] = ArrayValue(*((ArrayValue*) v)).clone();
+                    break;
+                case 2:
+                    (*arr)[i] = NumberValue(*((NumberValue*) v)).clone();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     if (values.size() != 1) {
         throw std::runtime_error("Invalid expression.");
     }
 
-    /*if (dynamic_cast<ArrayValue*>(values.top().get())) {
-        ArrayValue* val = ((ArrayValue*) values.top().get());
-        return (*val)[0];
-    }*/
     return values.top();
 }
 
