@@ -14,10 +14,10 @@ void Read::execute(VariableContext& scoped_vars) {
         std::getline(std::cin, in);
         try {
             NumberValue v(in);
-            scoped_vars.get_var(var)->set_value(v);
+            scoped_vars.get_var(var.first)->set_value(v);
         } catch (std::runtime_error& e) {
             StringValue s(in);
-            scoped_vars.get_var(var)->set_value(s);
+            scoped_vars.get_var(var.first)->set_value(s);
         }
     }
 }

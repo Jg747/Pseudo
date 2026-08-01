@@ -2,6 +2,7 @@
 #define __READ_HPP__
 
 #include "instruction.hpp"
+#include "expression/expression.hpp"
 #include "expression/variablecontext.hpp"
 
 #include <vector>
@@ -9,10 +10,10 @@
 
 class Read : public Instruction {
 private:
-    std::vector<std::string> var_order;
+    std::vector<std::pair<std::string, Expression>> var_order;
 
 public:
-    Read(std::vector<std::string>& var_order) : var_order(var_order) {}
+    Read(std::vector<std::pair<std::string, Expression>>& var_order) : var_order(var_order) {}
     void execute(VariableContext& scoped_vars) override;
 };
 

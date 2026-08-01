@@ -2,7 +2,6 @@
 #include "components/literals/function.hpp"
 #include "components/literals/value.hpp"
 #include "interpreter/analyzers/syntaxanalyzer.hpp"
-#include "interpreter/analyzers/literalanalyzer.hpp"
 #include "interpreter/analyzers/functionanalyzer.hpp"
 
 #include <string>

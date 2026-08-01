@@ -166,8 +166,9 @@ void Expression::arraysize_op(std::stack<std::shared_ptr<Value>>& values) {
         StringValue str = *((StringValue*) values.top().get());
         values.pop();
         values.push(NumberValue(str.get_len()).clone());
+    } else {
+        throw std::runtime_error("Can't apply size to this type of value");
     }
-    throw std::runtime_error("Can't apply size to this type of value");
 }
 
 void Expression::init_copy_array(std::stack<std::shared_ptr<Value>>& values) {

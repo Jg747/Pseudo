@@ -55,6 +55,7 @@ private:
     bool prev_instr_is_assign();
     add_instruction_ret add_cur_instruction(std::optional<tokens_e>& token);
     Instruction* get_deepest_instruction(Instruction* i, size_t deep);
+    int next_action();
 
     template<class T>
     T* get_cur_instruction_top_ptr();
@@ -169,7 +170,21 @@ public:
 class WriteAnalyzer : public InstructionAnalyzer {
 private:
     std::vector<write_literal> literals;
+    
+    std::size_t i;
+    std::string line;
+    bool is_closed;
+    bool first_arg;
+    bool space;
 
+    void init();
+    void skip_first_spaces();
+    void skip_spaces();
+    bool comma();
+    bool parse_literal();
+    std::string get_expression();
+    bool check_var_name(std::string& var);
+    bool parse_expression();
     bool create_instruction() override;
 
 public:
@@ -180,8 +195,20 @@ public:
 
 class ReadAnalyzer : public InstructionAnalyzer {
 private:
-    std::vector<std::string> vars;
+    std::vector<std::pair<std::string, Expression>> vars;
 
+    std::size_t i = 0;
+    bool first_arg = true;
+    bool space = false;
+    std::string line;
+
+    void init();
+    void skip_first_spaces();
+    void skip_spaces();
+    bool comma();
+    std::string get_expression();
+    bool check_var_name(std::string& var);
+    bool parse_expression();
     bool create_instruction() override;
 
 public:
