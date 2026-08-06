@@ -1,6 +1,6 @@
 BEGIN
     a[5] <- "ciao"
     write a, "\n"
-    read a[2]
+    read a[2 + 1]
     write a
 END

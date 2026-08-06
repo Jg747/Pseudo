@@ -22,6 +22,16 @@
 #include <stack>
 #include <list>
 
+#define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
+#define WRITE_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(WRITE_STR) + "'")
+#define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, WRITE_SEPARATOR) + "'")
+
+#define READ_SYNTAX_ERROR ("sytanx is '" + std::string(READ_STR) + " <variable>" + std::string(1, READ_SEPARATOR) + " <variable>" + std::string(1, READ_SEPARATOR) + " ...'")
+#define READ_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(READ_STR) + "'")
+#define READ_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, READ_SEPARATOR) + "'")
+
+#define READ_VAR "read"
+
 typedef struct {
     std::string lit;
     bool is_variable;

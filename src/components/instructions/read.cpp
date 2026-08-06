@@ -2,6 +2,7 @@
 #include "expression/variablecontext.hpp"
 #include "components/literals/numbervalue.hpp"
 #include "components/literals/stringvalue.hpp"
+#include "interpreter/analyzers/syntaxanalyzer.hpp"
 
 #include <vector>
 #include <string>
@@ -14,10 +15,11 @@ void Read::execute(VariableContext& scoped_vars) {
         std::getline(std::cin, in);
         try {
             NumberValue v(in);
-            scoped_vars.get_var(var.first)->set_value(v);
-        } catch (std::runtime_error& e) {
+            scoped_vars.get_var(READ_VAR)->set_value(v);
+        } catch (const std::runtime_error& e) {
             StringValue s(in);
-            scoped_vars.get_var(var.first)->set_value(s);
+            scoped_vars.get_var(READ_VAR)->set_value(s);
         }
+        var.second.evaluate(scoped_vars);
     }
 }

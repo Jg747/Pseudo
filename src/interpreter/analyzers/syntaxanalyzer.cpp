@@ -2,9 +2,6 @@
 TODO
 function support
 function syntax support
-
-TO FIX
-Read instruction needs to be capable of expression assignation
 */
 
 #include "lang.hpp"
@@ -137,7 +134,6 @@ bool SyntaxAnalyzer::analyze() {
 bool SyntaxAnalyzer::get_next_line() {
     std::string str;
     while (std::getline(in, str)) {
-        // printf("%s\n", str.c_str());
         cur_line++;
         int ret = analyze_line(str);
         if (ret == 0) {
@@ -830,10 +826,6 @@ bool IfAnalyzer::create_instruction() {
 
 
 
-#define WRITE_SYNTAX_ERROR ("sytanx is '" + std::string(WRITE_STR) + " " + std::string(1, STRING_BRACKET_CHAR) + "<literals>" + std::string(1, STRING_BRACKET_CHAR) + std::string(1, WRITE_SEPARATOR) + " <variable>" + std::string(1, WRITE_SEPARATOR) + " ...'")
-#define WRITE_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(WRITE_STR) + "'")
-#define WRITE_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, WRITE_SEPARATOR) + "'")
-
 static char get_escaped(char c) {
     switch (c) {
         case 'n':
@@ -1064,9 +1056,7 @@ bool WriteAnalyzer::next_state(tokens_e token) {
 }
 
 
-#define READ_SYNTAX_ERROR ("sytanx is '" + std::string(READ_STR) + " <variable>" + std::string(1, READ_SEPARATOR) + " <variable>" + std::string(1, READ_SEPARATOR) + " ...'")
-#define READ_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(READ_STR) + "'")
-#define READ_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, READ_SEPARATOR) + "'")
+
 void ReadAnalyzer::init() {
     line = a->get_cur_line();
     line = line.substr(line.find_first_of(READ_STR) + std::string(READ_STR).length());
@@ -1166,6 +1156,8 @@ bool ReadAnalyzer::parse_expression() {
         return false;
     }
 
+    var += " = " + std::string(READ_VAR);
+
     vars.push_back({ var, Expression::parse_expression(var) });
     return true;
 }
@@ -1206,7 +1198,9 @@ bool ReadAnalyzer::next_state(tokens_e token) {
 bool ReadAnalyzer::create_instruction() {
     // Read can create variables like an assignation
     for (auto& v : vars) {
-        a->add_variable(v.first);
+        if (v.first != READ_VAR) {
+            a->add_variable(v.first);
+        }
     }
 
     a->add_instruction(std::make_unique<Read>(vars));

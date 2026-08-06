@@ -4,6 +4,7 @@
 #include "components/instructions/instruction.hpp"
 #include "components/literals/variable.hpp"
 #include "components/literals/numbervalue.hpp"
+#include "interpreter/analyzers/syntaxanalyzer.hpp"
 
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@ Executor::Executor(std::list<std::unique_ptr<Instruction>>& list, std::vector<st
     for (auto& s : var_list) {
         scoped_vars.set(std::make_shared<Variable>(s));
     }
+    scoped_vars.set(std::make_shared<Variable>(std::string(READ_VAR)));
 }
 
 void Executor::start_pgm() {

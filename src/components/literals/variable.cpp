@@ -3,6 +3,7 @@
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/numbervalue.hpp"
 #include "components/literals/nullvalue.hpp"
+#include "interpreter/analyzers/syntaxanalyzer.hpp"
 #include "lang.hpp"
 
 #include <string>
@@ -103,5 +104,5 @@ std::shared_ptr<ArrayValue> Variable::get_array_value() {
 
 bool Variable::is_name_correct(std::string name) {
     std::regex reg(ALLOWED_VARS_CHARS);
-    return std::regex_match(name, reg);
+    return std::regex_match(name, reg) && !SyntaxAnalyzer::is_keyword(name);
 }
