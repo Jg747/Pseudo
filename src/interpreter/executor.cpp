@@ -41,7 +41,6 @@ void Executor::set_global_vars(std::vector<std::pair<std::string, Expression>>& 
 void Executor::start_pgm() {
     std::vector<Expression> assignations;
     funcs[entry]->execute(global_vars, assignations);
-    //funcs[entry].get().execute(global_vars, assignations);
 }
 
 void Executor::execute(std::string func_name, std::vector<Expression>& assignations) {

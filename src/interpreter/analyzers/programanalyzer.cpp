@@ -129,6 +129,7 @@ bool FunctionAnalyzer::analyze_syntax() {
         }
     }
 
+    a->stop_interpreter("Function syntax is '" + std::string(FUNCTION_STR) + " <name>(<arg1>, <arg2>, ...)'");
     return false;
 }
 

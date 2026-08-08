@@ -1,10 +1,11 @@
-bruh[5] <- 5
-
-FUNCTION main (p, g ,  b)
+x <- 5
+FUNCTION f()
 BEGIN
-    write bruh, "\n"
-    bruh[1] <- 7
-    write bruh, " - ", miao, "\n"
+    x <- 5
+    write x
 END
 
-miao <- "ciao"
+FUNCTION g()
+BEGIN
+    yo <- 5
+END

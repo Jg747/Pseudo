@@ -236,6 +236,11 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
         return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
     }
 
+    if (token.value() != tokens_e::BEGIN && !start) {
+        stop_interpreter("missing " + std::string(BEGIN_STR) + " to begin block");
+        return SyntaxAnalyzer::add_instruction_ret::ERROR;
+    }
+
     InstructionAnalyzer* a;
 
     switch (token.value()) {
@@ -345,7 +350,7 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
             cur_instruction.push(std::make_unique<ReadAnalyzer>());
             break;
         case tokens_e::FUNCTION:
-            stop_interpreter("no '" + std::string(FUNCTION_STR) + "' allowed in body");
+            stop_interpreter("'" + std::string(FUNCTION_STR) + "' not allowed in body of another function");
             return SyntaxAnalyzer::add_instruction_ret::ERROR;
         /*case tokens_e::RETURN:
             cur_instruction = std::make_unique<ReturnAnalyzer>();
