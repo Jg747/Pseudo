@@ -33,3 +33,10 @@ std::shared_ptr<Variable> VariableContext::get_var(const std::string& name) {
 
     return it->second;
 }
+
+VariableContext& VariableContext::operator+=(const VariableContext& other) {
+    for (auto [name, pointer] : other.variables) {
+        this->variables[name] = pointer;
+    }
+    return *this;
+}

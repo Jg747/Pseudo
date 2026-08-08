@@ -2,6 +2,7 @@
 #define __SYNTAXANALYZER_HPP__
 
 #include "interpreter/analyzers/analyzer.hpp"
+#include "interpreter/analyzers/programanalyzer.hpp"
 #include "lang.hpp"
 #include "expression/expression.hpp"
 #include "components/instructions/instruction.hpp"
@@ -38,6 +39,7 @@ typedef struct {
 } write_literal;
 
 class InstructionAnalyzer;
+class ProgramAnalyzer;
 
 class SyntaxAnalyzer : public Analyzer {
 private:
@@ -46,16 +48,10 @@ private:
 
     enum add_instruction_ret { NO_TOKEN, ERROR, NEXT, CALLBACK };
 
-    static const std::regex var_regex;
-    static std::unordered_map<tokens_e, std::regex> keywords;
-    
-    static void load_keywords();
-
-    std::ifstream in;
     std::vector<std::pair<std::string, std::size_t>> cur_tokens;
-    std::string _cur_line;
     std::stack<char> parenthesis;
     std::size_t cur_index;
+    bool start = false;
     bool var_flag = false;
     bool pop_next_flag = false;
 
@@ -71,17 +67,11 @@ private:
     T* get_cur_instruction_top_ptr();
 
 public:
-    static const char* whitespaces;
-    
-    static std::optional<tokens_e> analyze_token(std::string& token);
-    static std::vector<std::pair<std::string, std::size_t>> tokenize_string(std::string string);
-    static void trim_string(std::string& string);
-    static bool is_keyword(std::string& token);
-    
     template<class T, class R>
     static bool is_a(std::unique_ptr<T>& ptr);
     
-    SyntaxAnalyzer(std::string filename);
+    SyntaxAnalyzer(ProgramAnalyzer* p) : Analyzer(p->get_file(), p->get_cur_line_number()) {}
+    SyntaxAnalyzer(std::ifstream& in, std::size_t& cur_line) : Analyzer(in, cur_line) {}
 
     bool analyze() override;
     int analyze_line(std::string line);
@@ -91,7 +81,6 @@ public:
 
     bool get_var_flag() const;
     bool end_tokens() const;
-    std::string get_cur_line();
     void pop_top();
     void pop_next();
 

@@ -28,35 +28,6 @@ function syntax support
 #include <expected>
 #include <list>
 
-const char* SyntaxAnalyzer::whitespaces = " \n\t";
-const std::regex SyntaxAnalyzer::var_regex(ALLOWED_VARS_CHARS);
-std::unordered_map<tokens_e, std::regex> SyntaxAnalyzer::keywords;
-
-
-
-SyntaxAnalyzer::SyntaxAnalyzer(std::string filename) : Analyzer(filename) {
-    load_keywords();
-}
-
-void SyntaxAnalyzer::load_keywords() {
-    keywords.insert({ tokens_e::BEGIN, std::regex("^" + std::string(BEGIN_STR) + "$") });
-    keywords.insert({ tokens_e::END, std::regex("^" + std::string(END_STR) + "$") });
-    keywords.insert({ tokens_e::IF, std::regex("^" + std::string(IF_STR) + "(\\(.*)?$") });
-    keywords.insert({ tokens_e::THEN, std::regex("^" + std::string(THEN_STR) + "$") });
-    keywords.insert({ tokens_e::ELIF, std::regex("^" + std::string(ELIF_STR) + "(\\(.*)?$") });
-    keywords.insert({ tokens_e::ELSE, std::regex("^" + std::string(ELSE_STR) + "$") });
-    keywords.insert({ tokens_e::ENDIF, std::regex("^" + std::string(ENDIF_STR) + "$") });
-    keywords.insert({ tokens_e::WHILE, std::regex("^" + std::string(WHILE_STR) + "(\\(.*)?$") });
-    keywords.insert({ tokens_e::ENDWHILE, std::regex("^" + std::string(ENDWHILE_STR) + "$") });
-    keywords.insert({ tokens_e::REPEAT, std::regex("^" + std::string(REPEAT_STR) + "$") });
-    keywords.insert({ tokens_e::UNTIL, std::regex("^" + std::string(UNTIL_STR) + "(\\(.*)?$") });
-    keywords.insert({ tokens_e::READ, std::regex("^" + std::string(READ_STR) + "$") });
-    keywords.insert({ tokens_e::WRITE, std::regex("^" + std::string(WRITE_STR) + "$") });
-    keywords.insert({ tokens_e::ASSIGN, std::regex("^" + std::string(ASSIGN_STR) + "$") });
-    keywords.insert({ tokens_e::FUNCTION, std::regex("^" + std::string(FUNCTION_STR) + "$") });
-    keywords.insert({ tokens_e::RETURN, std::regex("^" + std::string(RETURN_STR) + "$") });
-}
-
 std::list<std::unique_ptr<Instruction>>& SyntaxAnalyzer::get_instructions() {
     return instructions;
 }
@@ -115,9 +86,6 @@ void SyntaxAnalyzer::add_variable(std::string& var_name) {
 }
 
 bool SyntaxAnalyzer::analyze() {
-    in.open(this->path);
-
-    cur_line = 0;
     if (!get_next_line()) {
         return false;
     }
@@ -127,7 +95,6 @@ bool SyntaxAnalyzer::analyze() {
         return false;
     }
 
-    in.close();
     return true;
 }
 
@@ -136,8 +103,10 @@ bool SyntaxAnalyzer::get_next_line() {
     while (std::getline(in, str)) {
         cur_line++;
         int ret = analyze_line(str);
+        if (parenthesis.size() == 0 && start) {
+            break;
+        }
         if (ret == 0) {
-            in.close();
             return false;
         } else if (ret < 0) {
             return true;
@@ -218,23 +187,6 @@ int SyntaxAnalyzer::analyze_tokens() {
     return 1;
 }
 
-std::optional<tokens_e> SyntaxAnalyzer::analyze_token(std::string& token) {
-    if (token.empty() || token.size() == 0) {
-        return {};
-    }
-
-    for (auto& [t, r] : keywords) {
-        if (std::regex_match(token, r)) {
-            return t;
-        }
-    }
-
-    if (std::regex_match(token, var_regex)) {
-        return tokens_e::VAR;
-    }
-    return tokens_e::NONE;
-}
-
 bool SyntaxAnalyzer::get_var_flag() const {
     return var_flag;
 }
@@ -288,7 +240,12 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
 
     switch (token.value()) {
         case tokens_e::BEGIN:
+            if (!start) {
+                start = true;
+            }
+
             parenthesis.push('(');
+            
             if (cur_instruction.size() > 0) {
                 a = cur_instruction.top().get();
                 a->set_begin();
@@ -398,53 +355,8 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
     return SyntaxAnalyzer::add_instruction_ret::NEXT;
 }
 
-std::vector<std::pair<std::string, std::size_t>> SyntaxAnalyzer::tokenize_string(std::string string) {
-    std::istringstream stream(string);
-    std::vector<std::pair<std::string, std::size_t>> ret;
-    std::string token;
-    while (std::getline(stream, token, ' ')) {
-        std::streampos pos = stream.tellg();
-        if (token.size() > 0) {
-            if (pos >= 0) {
-                ret.push_back({ token, (static_cast<std::size_t>(static_cast<std::streamoff>(pos)) - token.length() - 1) });
-            } else {
-                ret.push_back({ token, (string.length() - token.length()) });
-            }
-        }
-    }
-
-    for (auto& s : ret) {
-        trim_string(s.first);
-    }
-
-    return ret;
-}
-
-void SyntaxAnalyzer::trim_string(std::string& string) {
-    std::size_t start = string.find_first_not_of(whitespaces);
-    if (start == std::string::npos) {
-        return;
-    }
-
-    std::size_t end = string.find_last_not_of(whitespaces);
-    string = string.substr(start, end - start + 1);
-}
-
-bool SyntaxAnalyzer::is_keyword(std::string& token) {
-    for (auto& [k, v] : keywords) {
-        if (std::regex_match(token, v)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool SyntaxAnalyzer::eof() {
     return in.eof();
-}
-
-std::string SyntaxAnalyzer::get_cur_line() {
-    return _cur_line;
 }
 
 
@@ -454,7 +366,9 @@ void InstructionAnalyzer::set_params(SyntaxAnalyzer* a, std::vector<std::pair<st
     this->a = a;
 }
 
-bool InstructionAnalyzer::next_state(tokens_e token) { return true; }
+bool InstructionAnalyzer::next_state(tokens_e token) { 
+    return true;
+}
 
 void InstructionAnalyzer::init_state() {}
 
@@ -552,7 +466,7 @@ bool AssignationAnalyzer::create_instruction() {
 
         Expression expr = Expression::parse_expression(l + " = " + r);
         a->add_instruction(std::make_unique<Assignation>(expr));
-    } catch (std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         a->stop_interpreter("Assignation error: " + std::string(e.what()));
         return false;
     }
@@ -609,7 +523,7 @@ bool UntilAnalyzer::create_instruction() {
         } else {
             throw std::runtime_error("get_condition() returned no value");
         }
-    } catch (std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         a->stop_interpreter("Error in condition");
         return false;
     }
@@ -689,7 +603,7 @@ bool WhileAnalyzer::create_instruction() {
         } else {
             throw std::runtime_error("get_condition() returned no value");
         }
-    } catch (std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         a->stop_interpreter("Error in condition");
         return false;
     }
@@ -811,7 +725,7 @@ bool IfAnalyzer::analyze_condition() {
         } else {
             throw std::runtime_error("get_condition() returned no value");
         }
-    } catch (std::runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         a->stop_interpreter("Error in condition");
         return false;
     }
@@ -1156,9 +1070,9 @@ bool ReadAnalyzer::parse_expression() {
         return false;
     }
 
-    var += " = " + std::string(READ_VAR);
+    std::string expr = var + " = " + std::string(READ_VAR);
+    vars.push_back({ var, Expression::parse_expression(expr) });
 
-    vars.push_back({ var, Expression::parse_expression(var) });
     return true;
 }
 
@@ -1181,7 +1095,9 @@ bool ReadAnalyzer::analyze_syntax() {
 
         first_arg = false;
 
-        parse_expression();
+        if (!parse_expression()) {
+            return false;
+        }
     }
 
     create_instruction();

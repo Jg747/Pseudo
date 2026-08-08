@@ -12,10 +12,14 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Variable>> variables;
 
 public:
+    VariableContext() {}
+
     void set(std::shared_ptr<Variable> var);
     bool contains(const std::string& name) const;
     std::shared_ptr<Value> get(const std::string& name) const;
     std::shared_ptr<Variable> get_var(const std::string& name);
+
+    VariableContext& operator+=(const VariableContext& other);
 };
 
 #endif // __VARIABLE_CONTEXT_HPP__

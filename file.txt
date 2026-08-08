@@ -1,6 +1,10 @@
+bruh[5] <- 5
+
+FUNCTION main (p, g ,  b)
 BEGIN
-    a[5] <- "ciao"
-    write a, "\n"
-    read a[2 + 1]
-    write a
+    write bruh, "\n"
+    bruh[1] <- 7
+    write bruh, " - ", miao, "\n"
 END
+
+miao <- "ciao"

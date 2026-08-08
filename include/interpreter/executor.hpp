@@ -3,6 +3,7 @@
 
 #include "components/instructions/instruction.hpp"
 #include "components/literals/variable.hpp"
+#include "components/literals/function.hpp"
 #include "expression/expression.hpp"
 #include "expression/variablecontext.hpp"
 
@@ -14,15 +15,22 @@
 
 class Executor {
 private:
-    // TODO quando implementate le Functions spostare le seguenti proprietà per le funzioni
-    std::list<std::unique_ptr<Instruction>> list;
-    VariableContext scoped_vars;
+    static inline std::unique_ptr<Executor> e = nullptr;
+
+    std::unordered_map<std::string, std::unique_ptr<Function>>& funcs;
+    std::string entry;
+    VariableContext global_vars;
+
+    void set_global_vars(std::vector<std::pair<std::string, Expression>>& global_vars);
 
 public:
+    static Executor& new_instance(std::unordered_map<std::string, std::unique_ptr<Function>>&& funcs, std::string entry, std::vector<std::pair<std::string, Expression>>& global_vars);
+    static Executor& get_instance();
     static bool test_condition(Expression& condition, VariableContext& scoped_vars);
     
-    Executor(std::list<std::unique_ptr<Instruction>>& list, std::vector<std::string> var_list);
+    Executor(std::unordered_map<std::string, std::unique_ptr<Function>>& funcs, std::string entry, std::vector<std::pair<std::string, Expression>>& global_vars);
     void start_pgm();
+    void execute(std::string func_name, std::vector<Expression>& assignations);
 };
 
 #endif /* __EXECUTOR_HPP__ */

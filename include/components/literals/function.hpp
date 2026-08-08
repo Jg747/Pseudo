@@ -3,34 +3,31 @@
 
 #include "components/instructions/instruction.hpp"
 #include "components/literals/variable.hpp"
+#include "expression/expression.hpp"
 
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <list>
 
 class Function {
 private:
     std::string name;
-    int start;
-    int end;
-    std::unordered_map<std::string, std::unique_ptr<Variable>> variables;
-    std::vector<Instruction> instructions;
-    std::vector<Variable> params;
+    std::vector<std::string> args;
+
+    VariableContext scoped_vars;
+    std::list<std::unique_ptr<Instruction>> list;
+    
+    bool merged_vars;
 
 public:
-    Function();
-    Function(std::vector<Variable>& params);
+    Function(std::string& name, std::vector<std::string>& args);
+    void set_instructions(std::list<std::unique_ptr<Instruction>>& list);
+    void set_vars(std::vector<std::string>& vars);
 
-    void set_params(std::vector<Variable>& params);
-    std::vector<Variable>& get_params() const;
+    std::string get_name();
 
-    std::vector<Instruction>& get_instructions() const;
-    void add_instruction(Instruction& i);
-
-    std::unordered_map<std::string, Variable>& get_variables() const;
-    void add_variable(Variable& l);
-
-    void execute();
+    void execute(VariableContext& global_vars, std::vector<Expression>& assignations);
 };
 
 #endif // __FUNCTION_HPP__

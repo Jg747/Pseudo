@@ -2,7 +2,7 @@
 #include "components/literals/function.hpp"
 #include "components/literals/value.hpp"
 #include "interpreter/analyzers/syntaxanalyzer.hpp"
-#include "interpreter/analyzers/functionanalyzer.hpp"
+#include "interpreter/analyzers/programanalyzer.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -11,7 +11,7 @@
 
 namespace interpreter {
     bool load_file(std::string filename) {
-        SyntaxAnalyzer syntax(filename);
+        //SyntaxAnalyzer syntax(filename);
         return true;
     }
 };

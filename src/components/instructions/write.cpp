@@ -3,6 +3,7 @@
 #include "expression/variablecontext.hpp"
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/numbervalue.hpp"
+#include "components/literals/nullvalue.hpp"
 
 #include <iostream>
 
@@ -24,6 +25,10 @@ static std::string add_arr(ArrayValue* arr) {
 
 std::string WriteExpr::print(VariableContext& vars) {
     auto val = e.evaluate(vars);
+    if (dynamic_cast<NullValue*>(val.get())) {
+        throw std::runtime_error("Variable '" + val->get_variable()->get_name() + "' not declared");
+    }
+
     std::string ret;
     if (dynamic_cast<ArrayValue*>(val.get())) {
         ret = add_arr((ArrayValue*) val.get());
