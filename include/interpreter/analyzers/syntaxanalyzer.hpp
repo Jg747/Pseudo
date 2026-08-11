@@ -31,7 +31,8 @@
 #define READ_SYNTAX_NO_ARG ("no arguments provided after '" + std::string(READ_STR) + "'")
 #define READ_SYNTAX_COMMA_ERROR ("no arguments provided after '" + std::string(1, READ_SEPARATOR) + "'")
 
-#define READ_VAR "read"
+#define READ_VAR    (READ_STR)
+#define RETURN_VAR  (RETURN_STR)
 
 typedef struct {
     std::string lit;
@@ -115,6 +116,8 @@ private:
     std::string l;
     std::string r;
 
+    bool assignment(std::string& line);
+    bool create_call(std::string& line);
     bool create_instruction() override;
 
 public:
@@ -208,6 +211,18 @@ private:
     std::string get_expression();
     bool check_var_name(std::string& var);
     bool parse_expression();
+    bool create_instruction() override;
+
+public:
+    bool analyze_syntax() override;
+    void init_state() override;
+    bool next_state(tokens_e token) override;
+};
+
+class ReturnAnalyzer : public InstructionAnalyzer {
+private:
+    std::string expr;
+
     bool create_instruction() override;
 
 public:

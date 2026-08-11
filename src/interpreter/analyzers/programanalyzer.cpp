@@ -30,6 +30,10 @@ void ProgramAnalyzer::add_function(std::unique_ptr<Function>& f) {
     if (funcs.size() == 0) {
         program_entry_point = f->get_name();
     }
+
+    if (funcs.contains(f->get_name())) {
+        throw std::runtime_error("Can't declare another function with same name (" + f->get_name() + ")");
+    }
     funcs.emplace(f->get_name(), std::move(f));
 }
 
@@ -245,7 +249,7 @@ void FunctionAnalyzer::skip_spaces() {
 }
 
 bool FunctionAnalyzer::comma() {
-    if (line[i] != READ_SEPARATOR) {
+    if (line[i] != FUNC_ARGS_SEPARATOR) {
         a->stop_interpreter(FUNCTION_SYNTAX_ERROR);
         return false;
     }

@@ -12,4 +12,13 @@ public:
     }
 };
 
+class ReturnValue : public Value {
+public:
+    ReturnValue(std::string& func) : Value(func) {}
+
+    virtual std::unique_ptr<Value> clone() const override {
+        return std::make_unique<ReturnValue>(*this);
+    }
+};
+
 #endif /* __NULL_VALUE_HPP__ */

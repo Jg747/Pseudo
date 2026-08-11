@@ -29,8 +29,9 @@ public:
     static bool test_condition(Expression& condition, VariableContext& scoped_vars);
     
     Executor(std::unordered_map<std::string, std::unique_ptr<Function>>& funcs, std::string entry, std::vector<std::pair<std::string, Expression>>& global_vars);
-    void start_pgm();
-    void execute(std::string func_name, std::vector<Expression>& assignations);
+    int start_pgm(int argc, char** argv);
+    std::shared_ptr<Value> execute(std::string func_name, std::vector<std::shared_ptr<Value>>& assignations);
+    const std::vector<std::string>& get_params(std::string func_name) const;
 };
 
 #endif /* __EXECUTOR_HPP__ */

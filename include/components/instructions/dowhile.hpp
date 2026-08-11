@@ -12,7 +12,7 @@ public:
     DoWhile() {}
     DoWhile(Expression& condition) : Loop(condition) {}
     
-    void execute(VariableContext& scoped_vars) override;
+    bool execute(VariableContext& scoped_vars) override;
 };
 
 #endif // __DOWHILE_HPP__

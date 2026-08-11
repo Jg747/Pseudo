@@ -87,6 +87,10 @@ std::string Token::print() const {
             return "ArraySize";
         case token_t::ArrayIndex:
             return "ArrayIndex";
+        case token_t::FunctionCall:
+            return "FunctionCall";
+        case token_t::Separator:
+            return "Separator";
         default:
             return "Unknown";
     }
@@ -101,6 +105,8 @@ std::ostream& operator<<(std::ostream& os, const Token& c) {
 
 const op_info* Token::get_op_info(token_t type) {
     static const std::unordered_map<token_t, op_info> table = {
+        { token_t::FunctionCall, {9, false, -1, op_pos::Postfix}},
+
         { token_t::ArraySize,    {9, true, 1, op_pos::Postfix}},
         { token_t::ArrayIndex,   {9, false, 2, op_pos::Infix} },
 

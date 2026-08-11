@@ -158,6 +158,9 @@ void Lexer::process_special() {
         case '"':
             process_string();
             break;
+        case ',':
+            tokens.emplace_back(token_t::Separator);
+            break;
         default:
             throw std::runtime_error(std::string("Unexpected character: ") + c);
     }

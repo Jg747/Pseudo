@@ -56,6 +56,19 @@ void Parser::operator_position(const Token& token, const op_info* op) {
     }
 }
 
+void Parser::left_paren() {
+    if (state == ParserState::ExpectOperand) {
+        operators.push(Token(token_t::LeftParen));
+    } else if (state == ParserState::ExpectOperator) {
+        push_operator(Token(token_t::FunctionCall));
+        operators.push(Token(token_t::LeftParen));
+        
+        state = ParserState::ExpectOperand;
+        call_op_counts.push(0);
+        (output.end() - 1)->text.push_back('\x01');
+    }
+}
+
 void Parser::right_paren() {
     while (!operators.empty() && operators.top().type != token_t::LeftParen) {
         output.push_back(operators.top());
@@ -67,6 +80,34 @@ void Parser::right_paren() {
     }
             
     operators.pop();
+
+    if (!operators.empty() && operators.top().type == token_t::FunctionCall) {
+        if (call_op_counts.empty()) {
+            throw std::runtime_error("'(' wasn't Call operator");
+        }
+        operators.top().operands = call_op_counts.top() + (state == ParserState::ExpectOperator);
+        call_op_counts.pop();
+
+        state = ParserState::ExpectOperator;
+    }
+}
+
+void Parser::separator() {
+    if (state != ParserState::ExpectOperator) {
+        throw std::runtime_error("Unexpected separator");
+    }
+
+    while (!operators.empty() && operators.top().type != token_t::LeftParen) {
+        output.push_back(operators.top());
+        operators.pop();
+    }
+
+    if (operators.empty()) {
+        throw std::runtime_error("Unexpected separator");
+    }
+
+    call_op_counts.top()++;
+    state = ParserState::ExpectOperand;
 }
 
 void Parser::left_brack() {
@@ -132,12 +173,17 @@ Expression Parser::parse(const std::vector<Token>& tokens) {
         }
 
         if (token.type == token_t::LeftParen) {
-            operators.push(token);
+            left_paren();
             continue;
         }
 
         if (token.type == token_t::RightParen) {
             right_paren();
+            continue;
+        }
+
+        if (token.type == token_t::Separator) {
+            separator();
             continue;
         }
 

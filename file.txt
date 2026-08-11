@@ -1,11 +1,5 @@
-x <- 5
-FUNCTION f()
+FUNCTION main(args)
 BEGIN
-    x <- 5
-    write x
-END
-
-FUNCTION g()
-BEGIN
-    yo <- 5
+    args <- 0
+    write args
 END

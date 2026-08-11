@@ -1,5 +1,6 @@
 #include "expression/variablecontext.hpp"
 #include "components/literals/variable.hpp"
+#include "components/literals/specialvalue.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -39,4 +40,15 @@ VariableContext& VariableContext::operator+=(const VariableContext& other) {
         this->variables[name] = pointer;
     }
     return *this;
+}
+
+const std::unordered_map<std::string, std::shared_ptr<Variable>>& VariableContext::get_mappings() const {
+    return variables;
+}
+
+VariableContext operator+(const VariableContext& c1, const VariableContext& c2) {
+    VariableContext ret;
+    ret += c1;
+    ret += c2;
+    return ret;
 }

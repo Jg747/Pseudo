@@ -5,7 +5,8 @@
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/stringvalue.hpp"
 #include "components/literals/numbervalue.hpp"
-#include "components/literals/nullvalue.hpp"
+#include "components/literals/specialvalue.hpp"
+#include "interpreter/executor.hpp"
 #include "lang.hpp"
 
 #include <stack>
@@ -37,6 +38,7 @@ void Expression::init() {
     init_arr = -1;
 
     indexing_depth = std::vector<int>();
+    func_call = std::vector<std::string>();
 }
 
 void Expression::index_op(std::stack<std::shared_ptr<Value>>& values) {
@@ -91,6 +93,8 @@ void Expression::assign_op(std::stack<std::shared_ptr<Value>>& values, VariableC
         lhs = ArrayValue(*rhs).clone();
     } else if (dynamic_cast<NumberValue*>(rhs.get())) {
         lhs = NumberValue(*rhs).clone();
+    } else if (assign && dynamic_cast<NullValue*>(rhs.get())) {
+        throw std::runtime_error("Function does't return a value");
     } else {
         lhs = StringValue(*rhs).clone();
     }
@@ -126,6 +130,11 @@ void Expression::identifier_op(const Token& token, std::stack<std::shared_ptr<Va
     if (token.text == BEGIN_STR) {
         values.push(NumberValue(-1).clone());
         begin_str = true;
+        return;
+    }
+
+    if (*(token.text.end() - 1) == '\x01') {
+        func_call.push_back(token.text.substr(0, token.text.length() - 1));
         return;
     }
 
@@ -209,69 +218,6 @@ void Expression::init_copy_array(std::stack<std::shared_ptr<Value>>& values) {
     }
 }
 
-std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
-    std::stack<std::shared_ptr<Value>> values;
-    init();
-
-    for (const Token& token : tokens) {
-        switch (token.type) {
-            case token_t::Number:
-                values.push(std::make_shared<NumberValue>(token.value));
-                break;
-            case token_t::String:
-                values.push(std::make_shared<StringValue>(token.text));
-                break;
-            case token_t::Identifier: {
-                identifier_op(token, values, context);
-                break;
-            }
-            case token_t::UnaryMinus: {
-                unaryminus_op(values);
-                break;
-            }
-            case token_t::Plus:
-            case token_t::Minus:
-            case token_t::Multiply:
-            case token_t::Divide:
-            case token_t::Modulo:
-            case token_t::Less:
-            case token_t::LessEqual:
-            case token_t::Greater:
-            case token_t::GreaterEqual:
-            case token_t::Equal:
-            case token_t::NotEqual:
-            case token_t::LogicalAnd:
-            case token_t::LogicalOr:
-                operation(values, token);
-                break;
-            case token_t::ArrayIndex: {
-                index_op(values);
-                break;
-            }
-            case token_t::ArraySize: {
-                arraysize_op(values);
-                break;
-            }
-            case token_t::Assign: {
-                assign_op(values, context);
-                break;
-            }
-            default:
-                throw std::runtime_error("Invalid RPN token.");
-        }
-    }
-
-    if (init_arr != -1) {
-        init_copy_array(values);
-    }
-
-    if (values.size() != 1) {
-        throw std::runtime_error("Invalid expression.");
-    }
-
-    return values.top();
-}
-
 void Expression::operation(std::stack<std::shared_ptr<Value>>& values, const Token& token) const {
     if (values.size() < 2) {
         throw std::runtime_error("Missing operand.");
@@ -334,6 +280,98 @@ void Expression::operation(std::stack<std::shared_ptr<Value>>& values, const Tok
     }
 }
 
+void Expression::func(std::stack<std::shared_ptr<Value>>& values, VariableContext& context, int op_count) {
+    std::string f = *(func_call.end() - 1);
+    func_call.pop_back();
+    
+    Executor& ex = Executor::get_instance();
+
+    std::vector<std::shared_ptr<Value>> assignations;
+    for (int i = 0; i < op_count; i++) {
+        auto v = values.top();
+        values.pop();
+
+        if (dynamic_cast<NullValue*>(v.get())) {
+            throw std::runtime_error("One or more functions don't return a value");
+        }
+
+        assignations.push_back(v);
+    }
+
+    auto ret = ex.execute(f, assignations);
+    values.push(ret);
+}
+
+std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
+    std::stack<std::shared_ptr<Value>> values;
+    init();
+
+    for (const Token& token : tokens) {
+        switch (token.type) {
+            case token_t::Number:
+                values.push(std::make_shared<NumberValue>(token.value));
+                break;
+            case token_t::String:
+                values.push(std::make_shared<StringValue>(token.text));
+                break;
+            case token_t::Identifier: {
+                identifier_op(token, values, context);
+                break;
+            }
+            case token_t::UnaryMinus: {
+                unaryminus_op(values);
+                break;
+            }
+            case token_t::Plus:
+            case token_t::Minus:
+            case token_t::Multiply:
+            case token_t::Divide:
+            case token_t::Modulo:
+            case token_t::Less:
+            case token_t::LessEqual:
+            case token_t::Greater:
+            case token_t::GreaterEqual:
+            case token_t::Equal:
+            case token_t::NotEqual:
+            case token_t::LogicalAnd:
+            case token_t::LogicalOr:
+                operation(values, token);
+                break;
+            case token_t::ArrayIndex: {
+                index_op(values);
+                break;
+            }
+            case token_t::ArraySize: {
+                arraysize_op(values);
+                break;
+            }
+            case token_t::Assign: {
+                assign_op(values, context);
+                break;
+            }
+            case token_t::FunctionCall:
+                func(values, context, token.operands);
+                break;
+            default:
+                throw std::runtime_error("Invalid RPN token.");
+        }
+    }
+
+    if (init_arr != -1) {
+        init_copy_array(values);
+    }
+
+    if (!tokens.empty()) {
+        if (values.size() != 1) {
+            throw std::runtime_error("Invalid expression.");
+        }
+    } else {
+        return NullValue().clone();
+    }
+
+    return values.top();
+}
+
 void Expression::validate() const {
     int stackDepth = 0;
 
@@ -351,17 +389,23 @@ void Expression::validate() const {
                     throw std::runtime_error("Unexpected token.");
                 }
 
-                if (stackDepth < op->operandCount)
-                    throw std::runtime_error("Missing operand.");
+                int count = op->operandCount;
+                if (count == -1) {
+                    count = token.operands + 1;
+                }
 
-                stackDepth -= op->operandCount;
+                if (stackDepth < count) {
+                    throw std::runtime_error("Missing operand.");
+                }
+
+                stackDepth -= count;
                 stackDepth++;
                 break;
             }
         }
     }
 
-    if (stackDepth != 1) {
+    if (stackDepth != 1 && !tokens.empty()) {
         throw std::runtime_error("Malformed expression.");
     }
 }

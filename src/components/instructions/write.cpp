@@ -3,7 +3,7 @@
 #include "expression/variablecontext.hpp"
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/numbervalue.hpp"
-#include "components/literals/nullvalue.hpp"
+#include "components/literals/specialvalue.hpp"
 
 #include <iostream>
 
@@ -40,8 +40,9 @@ std::string WriteExpr::print(VariableContext& vars) {
     return ret;
 }
 
-void Write::execute(VariableContext& scoped_vars) {
+bool Write::execute(VariableContext& scoped_vars) {
     for (auto& p : print_order) {
         std::cout << p->print(scoped_vars);
     }
+    return true;
 }

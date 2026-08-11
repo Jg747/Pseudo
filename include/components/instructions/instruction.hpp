@@ -20,7 +20,7 @@ enum class instruction_e {
 
 class Instruction {
 public:
-    virtual void execute(VariableContext& scoped_vars) = 0;
+    virtual bool execute(VariableContext& scoped_vars) = 0;
 };
 
 #endif // __INSTRUCTION_HPP__

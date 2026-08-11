@@ -5,6 +5,9 @@
 #include "interpreter/analyzers/programanalyzer.hpp"
 #include "interpreter/executor.hpp"
 
+#include "expression/expression.hpp"
+#include "expression/variablecontext.hpp"
+
 int main(int argc, char** argv) {
     using namespace std;
 
@@ -27,23 +30,16 @@ int main(int argc, char** argv) {
 
     in.close();
 
+    int ret;
     try {
         auto e = Executor::new_instance(f.get_funcs(), f.get_entry_point(), f.get_global_vars());
-        e.start_pgm();
+        ret = e.start_pgm(argc, argv);
+        cout << "\n[press any key to close]";
+        std::getchar();
     } catch (const std::runtime_error& e) {
-        cout << e.what();
+        cout << "\n" << e.what();
         return 1;
     }
-    
-    /*SyntaxAnalyzer an("file.txt");
-    if (an.analyze()) {
-        cout << "OK!\n--- PGM OUTPUT ---\n";
 
-        Executor e(an.get_instructions(), an.get_var_list());
-        e.start_pgm();
-    } else {
-        cout << "\nNON OK!";
-    }*/
-
-    return 0;
+    return ret;
 }

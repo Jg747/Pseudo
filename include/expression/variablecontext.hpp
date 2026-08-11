@@ -18,8 +18,10 @@ public:
     bool contains(const std::string& name) const;
     std::shared_ptr<Value> get(const std::string& name) const;
     std::shared_ptr<Variable> get_var(const std::string& name);
+    const std::unordered_map<std::string, std::shared_ptr<Variable>>& get_mappings() const;
 
     VariableContext& operator+=(const VariableContext& other);
+    friend VariableContext operator+(const VariableContext& c1, const VariableContext& c2);
 };
 
 #endif // __VARIABLE_CONTEXT_HPP__

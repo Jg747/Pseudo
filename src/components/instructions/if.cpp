@@ -25,13 +25,16 @@ Instruction* If::get_last_instruction() {
     return cases.back().instructions.back().get();
 }
 
-void If::execute(VariableContext& scoped_vars) {
+bool If::execute(VariableContext& scoped_vars) {
     for (auto& s : cases) {
         if (s.test_condition(scoped_vars)) {
             for (auto& i : s.instructions) {
-                i->execute(scoped_vars);
+                if (!i->execute(scoped_vars)) {
+                    return false;
+                }
             }
             break;
         }
     }
+    return true;
 }

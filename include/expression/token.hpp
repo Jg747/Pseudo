@@ -33,7 +33,10 @@ enum class token_t {
     LogicalOr,
     
     ArraySize,
-    ArrayIndex
+    ArrayIndex,
+
+    FunctionCall,
+    Separator
 };
 
 enum class op_pos {
@@ -56,6 +59,7 @@ public:
     std::string text;
     double value = 0.0;
     std::size_t position = 0;
+    int operands = 0;
 
     Token() {};
     Token(std::string& s);

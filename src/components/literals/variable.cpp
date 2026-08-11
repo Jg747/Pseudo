@@ -2,7 +2,7 @@
 #include "components/literals/value.hpp"
 #include "components/literals/arrayvalue.hpp"
 #include "components/literals/numbervalue.hpp"
-#include "components/literals/nullvalue.hpp"
+#include "components/literals/specialvalue.hpp"
 #include "interpreter/analyzers/syntaxanalyzer.hpp"
 #include "lang.hpp"
 

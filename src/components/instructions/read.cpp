@@ -9,7 +9,7 @@
 #include <iostream>
 #include <exception>
 
-void Read::execute(VariableContext& scoped_vars) {
+bool Read::execute(VariableContext& scoped_vars) {
     for (auto& var : var_order) {
         std::string in;
         std::getline(std::cin, in);
@@ -22,4 +22,5 @@ void Read::execute(VariableContext& scoped_vars) {
         }
         var.second.evaluate(scoped_vars);
     }
+    return true;
 }

@@ -19,8 +19,6 @@ enum class tokens_e {
     ASSIGN,
     FUNCTION,
     RETURN,
-    OPERATOR,
-    EXPR_TOK,
     VAR,
     NONE
 };
@@ -48,6 +46,7 @@ enum class tokens_e {
 #define STRING_ESCAPE_CHAR              '\\'
 #define WRITE_SEPARATOR                 ','
 #define READ_SEPARATOR                  ','
+#define FUNC_ARGS_SEPARATOR             ','
 #define FUNC_START_ARGS                 '('
 #define FUNC_END_ARGS                   ')'
 #define COND_START_COND                 '('

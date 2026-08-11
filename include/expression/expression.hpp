@@ -27,6 +27,7 @@ private:
     std::vector<std::string> var_list;
 
     std::string assign_var;
+    std::vector<std::string> func_call;
     bool assign;
     bool begin_str;
     int i;
@@ -42,6 +43,7 @@ private:
     void arraysize_op(std::stack<std::shared_ptr<Value>>& values);
     void init_copy_array(std::stack<std::shared_ptr<Value>>& values);
     void operation(std::stack<std::shared_ptr<Value>>& values, const Token& token) const;
+    void func(std::stack<std::shared_ptr<Value>>& values, VariableContext& context, int op_count);
     void assign_deep_index(ArrayValue* value, std::shared_ptr<Value>& val, std::vector<int> indexes, size_t depth);
 };
 

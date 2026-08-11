@@ -17,6 +17,8 @@ function syntax support
 #include "components/instructions/while.hpp"
 #include "components/instructions/dowhile.hpp"
 #include "components/instructions/if.hpp"
+#include "components/instructions/return.hpp"
+#include "components/instructions/call.hpp"
 
 #include <fstream>
 #include <string>
@@ -352,9 +354,9 @@ SyntaxAnalyzer::add_instruction_ret SyntaxAnalyzer::add_cur_instruction(std::opt
         case tokens_e::FUNCTION:
             stop_interpreter("'" + std::string(FUNCTION_STR) + "' not allowed in body of another function");
             return SyntaxAnalyzer::add_instruction_ret::ERROR;
-        /*case tokens_e::RETURN:
-            cur_instruction = std::make_unique<ReturnAnalyzer>();
-            break;*/
+        case tokens_e::RETURN:
+            cur_instruction.push(std::make_unique<ReturnAnalyzer>());
+            break;
         default: return SyntaxAnalyzer::add_instruction_ret::NO_TOKEN;
     }
     return SyntaxAnalyzer::add_instruction_ret::NEXT;
@@ -438,19 +440,16 @@ bool AssignationAnalyzer::analyze_syntax() {
     size_t count = end.second + end.first.length() - token.second;
     std::string line = a->get_cur_line().substr(token.second, count);
 
-    l = line.substr(0, line.find(ASSIGN_STR));
-    if (l.empty()) {
-        a->stop_interpreter("Error on left side of expression (var to assign)");
-        return false;
-    }
-
-    r = line.substr(line.find(ASSIGN_STR) + strlen(ASSIGN_STR));
-    if (r.empty()) {
-        a->stop_interpreter("Error on right side of expression");
-        return false;
-    }
-
-    if (!create_instruction()) {
+    if (line.find(ASSIGN_STR) != std::string::npos) {
+        if (!assignment(line)) {
+            return false;
+        }
+    } else if (line.find(FUNC_START_ARGS) != std::string::npos && line.find(FUNC_END_ARGS) != std::string::npos) {
+        if (!create_call(line)) {
+            return false;
+        }
+    } else {
+        a->stop_interpreter("Assignation error: invalid expression provided");
         return false;
     }
 
@@ -471,6 +470,37 @@ bool AssignationAnalyzer::create_instruction() {
 
         Expression expr = Expression::parse_expression(l + " = " + r);
         a->add_instruction(std::make_unique<Assignation>(expr));
+    } catch (const std::runtime_error& e) {
+        a->stop_interpreter("Assignation error: " + std::string(e.what()));
+        return false;
+    }
+    return true;
+}
+
+bool AssignationAnalyzer::assignment(std::string& line) {
+    l = line.substr(0, line.find(ASSIGN_STR));
+    if (l.empty()) {
+        a->stop_interpreter("Error on left side of expression (var to assign)");
+        return false;
+    }
+
+    r = line.substr(line.find(ASSIGN_STR) + strlen(ASSIGN_STR));
+    if (r.empty()) {
+        a->stop_interpreter("Error on right side of expression");
+        return false;
+    }
+
+    if (!create_instruction()) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool AssignationAnalyzer::create_call(std::string& line) {
+    try {
+        Expression expr = Expression::parse_expression(line);
+        a->add_instruction(std::make_unique<Call>(expr));
     } catch (const std::runtime_error& e) {
         a->stop_interpreter("Assignation error: " + std::string(e.what()));
         return false;
@@ -858,13 +888,27 @@ bool WriteAnalyzer::parse_literal() {
 
 std::string WriteAnalyzer::get_expression() {
     std::string var = "";
-    for (; i < line.size() && line[i] != WRITE_SEPARATOR; i++) {
+    bool func = false;
+    for (; i < line.size(); i++) {
         if (!space && std::isspace(line[i])) {
             (*cur_index)++;
             space = true;
         } else if (space && !std::isspace(line[i])) {
             space = false;
         }
+        
+        if (line[i] == FUNC_START_ARGS) {
+            func = true;
+        }
+
+        if (line[i] == FUNC_END_ARGS) {
+            func = false;
+        }
+
+        if (!func && line[i] == WRITE_SEPARATOR) {
+            break;
+        }
+
         var += line[i];
     }
     SyntaxAnalyzer::trim_string(var);
@@ -872,12 +916,14 @@ std::string WriteAnalyzer::get_expression() {
 }
 
 bool WriteAnalyzer::check_var_name(std::string& var) {
-    if (var.contains("?") || var.contains("[")) {
+    if (var.contains("?") || var.contains("[") || var.contains(FUNC_START_ARGS)) {
         std::string temp;
         if (var.contains("[")) {
             temp = var.substr(0, var.find("["));
-        } else {
+        } else if (var.contains("?")) {
             temp = var.substr(0, var.find("?"));
+        } else {
+            temp = var.substr(0, var.find(FUNC_START_ARGS));
         }
 
         SyntaxAnalyzer::trim_string(temp);
@@ -1125,5 +1171,42 @@ bool ReadAnalyzer::create_instruction() {
     }
 
     a->add_instruction(std::make_unique<Read>(vars));
+    return true;
+}
+
+
+
+bool ReturnAnalyzer::analyze_syntax() {
+    if (a->end_tokens() || SyntaxAnalyzer::is_keyword(tokens->at(*cur_index).first)) {
+        this->expr = "";
+        return create_instruction();
+    }
+
+    auto token = tokens->at(*cur_index);
+    while (!a->end_tokens() && !SyntaxAnalyzer::is_keyword(tokens->at(*cur_index).first)) {
+        (*cur_index)++;
+    }
+    auto end = tokens->at(*cur_index - 1);
+    size_t count = end.second + end.first.length() - token.second;
+    this->expr = a->get_cur_line().substr(token.second, count);
+
+    return create_instruction();
+}
+
+void ReturnAnalyzer::init_state() {}
+
+bool ReturnAnalyzer::next_state(tokens_e token) { return false; }
+
+bool ReturnAnalyzer::create_instruction() {
+    Expression e;
+    if (expr.empty()) {
+        a->add_instruction(std::make_unique<Return>(e));
+        return true;
+    }
+    
+    e = Expression::parse_expression(expr);
+    a->add_instruction(std::make_unique<Return>(e));
+
+    a->pop_next();
     return true;
 }

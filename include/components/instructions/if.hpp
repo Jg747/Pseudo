@@ -29,7 +29,7 @@ public:
     void add_instruction(std::unique_ptr<Instruction>& i) override;
     Instruction* get_last_instruction();
 
-    void execute(VariableContext& scoped_vars) override;
+    bool execute(VariableContext& scoped_vars) override;
 };
 
 #endif // __IF_HPP__

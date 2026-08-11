@@ -34,7 +34,7 @@ private:
     std::list<std::shared_ptr<WriteLiteral>> print_order;
 public:
     Write(std::list<std::shared_ptr<WriteLiteral>>& print_order) : print_order(print_order) {}
-    void execute(VariableContext& scoped_vars) override;
+    bool execute(VariableContext& scoped_vars) override;
 };
 
 #endif // __WRITE_HPP__

@@ -14,7 +14,7 @@ private:
 
 public:
     Read(std::vector<std::pair<std::string, Expression>>& var_order) : var_order(var_order) {}
-    void execute(VariableContext& scoped_vars) override;
+    bool execute(VariableContext& scoped_vars) override;
 };
 
 #endif // __READ_HPP__

@@ -6,6 +6,8 @@
 #include "components/literals/numbervalue.hpp"
 #include "interpreter/analyzers/syntaxanalyzer.hpp"
 #include "components/literals/function.hpp"
+#include "components/literals/specialvalue.hpp"
+#include "components/literals/arrayvalue.hpp"
 
 #include <string>
 #include <vector>
@@ -30,6 +32,7 @@ Executor::Executor(std::unordered_map<std::string, std::unique_ptr<Function>>& f
 
 void Executor::set_global_vars(std::vector<std::pair<std::string, Expression>>& global_vars) {
     this->global_vars.set(std::make_shared<Variable>(std::string(READ_VAR)));
+    this->global_vars.set(std::make_shared<Variable>(std::string(RETURN_VAR)));
 
     for (auto& s : global_vars) {
         auto var = std::make_shared<Variable>(s.first);
@@ -38,13 +41,47 @@ void Executor::set_global_vars(std::vector<std::pair<std::string, Expression>>& 
     }
 }
 
-void Executor::start_pgm() {
-    std::vector<Expression> assignations;
-    funcs[entry]->execute(global_vars, assignations);
+int Executor::start_pgm(int argc, char** argv) {
+    std::vector<std::shared_ptr<Value>> assignations;
+
+    int args = funcs.at(entry)->get_args().size();
+    switch (args) {
+        case 0:
+            break;
+        case 1: {
+            ArrayValue arr;
+            for (int i = 2; i < argc; i++) {
+                arr.add_value(std::make_shared<StringValue>(std::string(argv[i])));
+            }
+            assignations.push_back(arr.clone());
+            break;
+        }
+        default:
+            throw std::runtime_error("Entry point syntax is '" + std::string(FUNCTION_STR) + " <entry_func>()' or '" + std::string(FUNCTION_STR) + " <entry_func>(<arr>)'");
+    }
+    
+    auto ret = execute(entry, assignations);
+
+    if (dynamic_cast<NumberValue*>(ret.get())) {
+        return static_cast<NumberValue*>(ret.get())->get_int_value();
+    }
+
+    if (dynamic_cast<NullValue*>(ret.get())) {
+        return 0;
+    }
+
+    throw std::runtime_error("Entry point must return integer value");
 }
 
-void Executor::execute(std::string func_name, std::vector<Expression>& assignations) {
-    //funcs[func_name].execute(global_vars);
+std::shared_ptr<Value> Executor::execute(std::string func_name, std::vector<std::shared_ptr<Value>>& assignations) {
+    funcs[func_name]->stack_push();
+    auto ret = funcs[func_name]->execute(global_vars, assignations);
+    funcs[func_name]->stack_pop();
+    return ret;
+}
+
+const std::vector<std::string>& Executor::get_params(std::string func_name) const {
+    return funcs[func_name]->get_args();
 }
 
 bool Executor::test_condition(Expression& condition, VariableContext& scoped_vars) {
