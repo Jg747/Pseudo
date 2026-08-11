@@ -11,7 +11,12 @@
 int main(int argc, char** argv) {
     using namespace std;
 
-    std::ifstream in("file.txt");
+    if (argc < 2) {
+        cout << "Arguments must be: <file> [<arg1> <arg2> ...]";
+        return 1;
+    }
+
+    std::ifstream in(argv[1]);
     if (!in) {
         cout << "File not found!";
         return 1;
@@ -20,7 +25,7 @@ int main(int argc, char** argv) {
     ProgramAnalyzer f(in);
     try {
         if (!f.analyze()) {
-            cout << "Errore!";
+            cout << "Error while parsing";
             return 1;
         }
     } catch (const std::runtime_error& e) {

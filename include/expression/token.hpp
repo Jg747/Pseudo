@@ -47,8 +47,8 @@ enum class op_pos {
 
 struct op_info {
     int precedence;
-    bool rightAssociative;
-    int operandCount;
+    bool right_associative;
+    int operand_count;
     op_pos position;
 };
 

@@ -14,8 +14,8 @@ void Parser::push_operator(const Token& token) {
             break;
         }
 
-        bool pop = (!current->rightAssociative && current->precedence <= top->precedence) ||
-                   (current->rightAssociative && current->precedence < top->precedence);
+        bool pop = (!current->right_associative && current->precedence <= top->precedence) ||
+                   (current->right_associative && current->precedence < top->precedence);
 
         if (!pop) {
             break;

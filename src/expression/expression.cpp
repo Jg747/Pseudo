@@ -389,7 +389,7 @@ void Expression::validate() const {
                     throw std::runtime_error("Unexpected token.");
                 }
 
-                int count = op->operandCount;
+                int count = op->operand_count;
                 if (count == -1) {
                     count = token.operands + 1;
                 }
