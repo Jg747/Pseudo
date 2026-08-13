@@ -1,18 +1,5 @@
 FUNCTION main()
 BEGIN
-    test(0)
-END
-
-FUNCTION test(n)
-BEGIN
-    IF (n == 3) THEN
-        write "fine\n"
-        RETURN 1
-    ENDIF
-
-    a[BEGIN] <- ""
-    a <- a + n
-    write "[", n, " - prima] ", a, "\n"
-    test(n + 1)
-    write "[", n, " - dopo] ", a, "\n"
+    a <- 0
+    write a, "asd" #ciao
 END

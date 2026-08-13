@@ -153,6 +153,15 @@ int SyntaxAnalyzer::next_action() {
 int SyntaxAnalyzer::analyze_tokens() {
     while (cur_index < cur_tokens.size()) {
         auto token = cur_tokens[cur_index];
+        
+        std::size_t comment;
+        if ((comment = token.first.find_first_not_of(whitespaces)) != std::string::npos) {
+            if (token.first[comment] == COMMENT_CHAR) {
+                cur_index = cur_tokens.size();
+                break;
+            }
+        }
+
         auto cur_tk = analyze_token(token.first);
 
         if (!cur_tk.has_value()) {
@@ -496,6 +505,10 @@ bool AssignationAnalyzer::assignment(std::string& line) {
         return false;
     }
 
+    if (r.find(COMMENT_CHAR) != std::string::npos) {
+        r = r.substr(0, r.find(COMMENT_CHAR) - 1);
+    }
+
     if (!create_instruction()) {
         return false;
     }
@@ -504,6 +517,10 @@ bool AssignationAnalyzer::assignment(std::string& line) {
 }
 
 bool AssignationAnalyzer::create_call(std::string& line) {
+    if (line.find(COMMENT_CHAR) != std::string::npos) {
+        line = line.substr(0, line.find(COMMENT_CHAR) - 1);
+    }
+
     try {
         Expression expr = Expression::parse_expression(line);
         a->add_instruction(std::make_unique<Call>(expr));
@@ -843,7 +860,7 @@ bool WriteAnalyzer::comma() {
 
     skip_spaces();
 
-    if (i >= line.size()) {
+    if (i >= line.size() || line[i] == COMMENT_CHAR) {
         a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
         return false;
     }
@@ -888,6 +905,8 @@ bool WriteAnalyzer::parse_literal() {
     }
 
     literals.push_back({ .lit = literal, .is_variable = false });
+
+    skip_spaces();
     
     return true;
 }
@@ -949,6 +968,9 @@ bool WriteAnalyzer::check_var_name(std::string& var) {
 
 bool WriteAnalyzer::parse_expression() {
     std::string var = get_expression();
+    if (var.contains(COMMENT_CHAR)) {
+        var = var.substr(0, var.find(COMMENT_CHAR) - 1);
+    }
 
     if (var.empty()) {
         a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
@@ -996,6 +1018,10 @@ bool WriteAnalyzer::analyze_syntax() {
             if (!parse_expression()) {
                 return false;
             }
+        }
+
+        if (line[i] == COMMENT_CHAR) {
+            break;
         }
     }
 
@@ -1122,6 +1148,9 @@ bool ReadAnalyzer::check_var_name(std::string& var) {
 
 bool ReadAnalyzer::parse_expression() {
     std::string var = get_expression();
+    if (var.contains(COMMENT_CHAR)) {
+        var = var.substr(0, var.find(COMMENT_CHAR) - 1);
+    }
 
     if (var.empty()) {
         a->stop_interpreter(READ_SYNTAX_COMMA_ERROR);
@@ -1193,7 +1222,7 @@ bool ReadAnalyzer::create_instruction() {
 
 
 bool ReturnAnalyzer::analyze_syntax() {
-    if (a->end_tokens() || SyntaxAnalyzer::is_keyword(tokens->at(*cur_index).first)) {
+    if (a->end_tokens() || SyntaxAnalyzer::is_keyword(tokens->at(*cur_index).first) || tokens->at(*cur_index).first.find(COMMENT_CHAR) == 0) {
         this->expr = "";
         return create_instruction();
     }
@@ -1205,6 +1234,10 @@ bool ReturnAnalyzer::analyze_syntax() {
     auto end = tokens->at(*cur_index - 1);
     size_t count = end.second + end.first.length() - token.second;
     this->expr = a->get_cur_line().substr(token.second, count);
+
+    if (this->expr.find(COMMENT_CHAR) != std::string::npos) {
+        this->expr = this->expr.substr(0, this->expr.find(COMMENT_CHAR) - 1);
+    }
 
     return create_instruction();
 }

@@ -7,6 +7,6 @@ bool DoWhile::execute(VariableContext& scoped_vars) {
                 return false;
             }
         }
-    } while (test_condition(scoped_vars));
+    } while (!test_condition(scoped_vars));
     return true;
 }

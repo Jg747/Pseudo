@@ -62,6 +62,14 @@ bool ProgramAnalyzer::analyze_line(std::string str) {
 bool ProgramAnalyzer::analyze_tokens() {
     while (cur_index < cur_tokens.size()) {
         auto token = cur_tokens[cur_index];
+
+        std::size_t comment;
+        if ((comment = token.first.find_first_not_of(whitespaces)) != std::string::npos) {
+            if (token.first[comment] == COMMENT_CHAR) {
+                break;
+            }
+        }
+
         auto cur_tk = analyze_token(token.first);
 
         if (!cur_tk.has_value()) {
@@ -189,7 +197,18 @@ bool FunctionAnalyzer::analyze_args() {
 
     if (line[i] == FUNC_END_ARGS) {
         end = true;
-        return create_function();
+        if (line.find_last_not_of(Analyzer::whitespaces) == i) {
+            return create_function();
+        }
+
+        std::string temp = line.substr(i + 1);
+        if (temp[temp.find_first_not_of(SyntaxAnalyzer::whitespaces)] == COMMENT_CHAR) {
+            line = line.substr(0, i);
+            return create_function();
+        }
+
+        a->stop_interpreter("Unexpected character after function declaration");
+        return false;
     }
 
     while (i < line.size()) {
@@ -209,6 +228,14 @@ bool FunctionAnalyzer::analyze_args() {
             if (line.find_last_not_of(Analyzer::whitespaces) == i) {
                 return create_function();
             }
+
+            std::string temp = line.substr(i + 1);
+            if (temp[temp.find_first_not_of(SyntaxAnalyzer::whitespaces)] == COMMENT_CHAR) {
+                line = line.substr(0, i);
+                return create_function();
+            }
+
+            a->stop_interpreter("Unexpected character after function declaration");
             return false;
         }
     }
@@ -347,6 +374,10 @@ bool GlobalAssignationAnalyzer::analyze_syntax() {
 
     increment_index(l);
     increment_index(r);
+
+    if (r.find(COMMENT_CHAR) != std::string::npos) {
+        r = r.substr(0, r.find(COMMENT_CHAR) - 1);
+    }
 
     if (!create_instruction()) {
         return false;
