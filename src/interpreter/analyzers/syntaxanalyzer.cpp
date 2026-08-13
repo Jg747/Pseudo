@@ -422,7 +422,13 @@ std::expected<Expression, bool> InstructionAnalyzer::get_condition() {
     cond = cond.substr(0, i);
     (*cur_index) += spaces + 1;
 
-    return Expression::parse_expression(cond);
+    try {
+        Expression e = Expression::parse_expression(cond);
+        return e;
+    } catch (const std::runtime_error& e) {
+        a->stop_interpreter(e.what());
+        return std::unexpected(false);
+    }
 }
 
 
@@ -1005,7 +1011,12 @@ bool WriteAnalyzer::create_instruction() {
     std::list<std::shared_ptr<WriteLiteral>> print;
     for (auto& s : literals) {
         if (s.is_variable) {
-            print.push_back(std::make_shared<WriteExpr>(Expression::parse_expression(s.lit)));
+            try {
+                print.push_back(std::make_shared<WriteExpr>(Expression::parse_expression(s.lit)));
+            } catch (const std::runtime_error& e) {
+                a->stop_interpreter(e.what());
+                return false;
+            }
         } else {
             print.push_back(std::make_shared<WriteString>(s.lit));
         }
@@ -1122,7 +1133,12 @@ bool ReadAnalyzer::parse_expression() {
     }
 
     std::string expr = var + " = " + std::string(READ_VAR);
-    vars.push_back({ var, Expression::parse_expression(expr) });
+    try {
+        vars.push_back({ var, Expression::parse_expression(expr) });
+    } catch (const std::runtime_error& e) {
+        a->stop_interpreter(e.what());
+        return false;
+    }
 
     return true;
 }
@@ -1201,12 +1217,18 @@ bool ReturnAnalyzer::create_instruction() {
     Expression e;
     if (expr.empty()) {
         a->add_instruction(std::make_unique<Return>(e));
+        a->pop_next();
         return true;
     }
     
-    e = Expression::parse_expression(expr);
-    a->add_instruction(std::make_unique<Return>(e));
+    try {
+        e = Expression::parse_expression(expr);
+        a->add_instruction(std::make_unique<Return>(e));
+        a->pop_next();
+    } catch (const std::runtime_error& e) {
+        a->stop_interpreter(e.what());
+        return false;
+    }
 
-    a->pop_next();
     return true;
 }

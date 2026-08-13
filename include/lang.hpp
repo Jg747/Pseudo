@@ -41,6 +41,7 @@ enum class tokens_e {
 #define RETURN_STR                      "RETURN"
 
 #define ALLOWED_VARS_CHARS              "^[A-Za-z_][A-Za-z_0-9]*((\\[.*)?|(\\(.*)?)$"
+#define COMMENT_CHAR                    '#'
 
 #define STRING_BRACKET_CHAR             '\"'
 #define STRING_ESCAPE_CHAR              '\\'
