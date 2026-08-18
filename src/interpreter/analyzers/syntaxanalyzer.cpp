@@ -842,7 +842,7 @@ void WriteAnalyzer::skip_first_spaces() {
 }
 
 void WriteAnalyzer::skip_spaces() {
-    for (i += 1; i < line.size() && std::isspace(line[i]); i++) {
+    for (; i < line.size() && std::isspace(line[i]); i++) {
         if (!space && std::isspace(line[i])) {
             space = true;
             (*cur_index)++;
@@ -858,9 +858,10 @@ bool WriteAnalyzer::comma() {
         return false;
     }
 
+    i++;
     skip_spaces();
 
-    if (i >= line.size() || line[i] == COMMENT_CHAR) {
+    if (i >= line.size()) {
         a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
         return false;
     }
@@ -905,8 +906,6 @@ bool WriteAnalyzer::parse_literal() {
     }
 
     literals.push_back({ .lit = literal, .is_variable = false });
-
-    skip_spaces();
     
     return true;
 }
@@ -930,7 +929,7 @@ std::string WriteAnalyzer::get_expression() {
             func = false;
         }
 
-        if (!func && line[i] == WRITE_SEPARATOR) {
+        if ((!func && line[i] == WRITE_SEPARATOR) || line[i] == COMMENT_CHAR) {
             break;
         }
 
@@ -968,9 +967,6 @@ bool WriteAnalyzer::check_var_name(std::string& var) {
 
 bool WriteAnalyzer::parse_expression() {
     std::string var = get_expression();
-    if (var.contains(COMMENT_CHAR)) {
-        var = var.substr(0, var.find(COMMENT_CHAR) - 1);
-    }
 
     if (var.empty()) {
         a->stop_interpreter(WRITE_SYNTAX_COMMA_ERROR);
@@ -982,9 +978,9 @@ bool WriteAnalyzer::parse_expression() {
         return false;
     }
 
-    if (!check_var_name(var)) {
+    /*if (!check_var_name(var)) {
         return false;
-    }
+    }*/
 
     literals.push_back({ .lit = var, .is_variable = true });
 
@@ -1020,7 +1016,10 @@ bool WriteAnalyzer::analyze_syntax() {
             }
         }
 
-        if (line[i] == COMMENT_CHAR) {
+        skip_spaces();
+
+        if (i < line.length() && line[i] == COMMENT_CHAR) {
+            (*cur_index) = tokens->size();
             break;
         }
     }
@@ -1081,7 +1080,7 @@ void ReadAnalyzer::skip_first_spaces() {
 }
 
 void ReadAnalyzer::skip_spaces() {
-    for (i += 1; i < line.size() && std::isspace(line[i]); i++) {
+    for (; i < line.size() && std::isspace(line[i]); i++) {
         if (!space && std::isspace(line[i])) {
             space = true;
             (*cur_index)++;
@@ -1097,6 +1096,7 @@ bool ReadAnalyzer::comma() {
         return false;
     }
 
+    i++;
     skip_spaces();
 
     if (i >= line.size()) {
@@ -1116,6 +1116,11 @@ std::string ReadAnalyzer::get_expression() {
         } else if (space && !std::isspace(line[i])) {
             space = false;
         }
+
+        if (line[i] == COMMENT_CHAR) {
+            break;
+        }
+
         var += line[i];
     }
     SyntaxAnalyzer::trim_string(var);
@@ -1148,9 +1153,6 @@ bool ReadAnalyzer::check_var_name(std::string& var) {
 
 bool ReadAnalyzer::parse_expression() {
     std::string var = get_expression();
-    if (var.contains(COMMENT_CHAR)) {
-        var = var.substr(0, var.find(COMMENT_CHAR) - 1);
-    }
 
     if (var.empty()) {
         a->stop_interpreter(READ_SYNTAX_COMMA_ERROR);
@@ -1193,6 +1195,13 @@ bool ReadAnalyzer::analyze_syntax() {
 
         if (!parse_expression()) {
             return false;
+        }
+
+        skip_spaces();
+
+        if (i < line.length() && line[i] == COMMENT_CHAR) {
+            (*cur_index) = tokens->size();
+            break;
         }
     }
 

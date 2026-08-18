@@ -1,5 +1,5 @@
 FUNCTION main()
 BEGIN
-    a <- 0
-    write a, "asd" #ciao
+    s <- "1"
+    write -s
 END
