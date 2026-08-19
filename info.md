@@ -104,11 +104,19 @@ output: `['value provided', 5, [3.54, 3.54], 'value provided']`
 - `number` * `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the multiplication
 - `string` * `string` casts the values as `number` (if not possible an exception is thrown) and performs the multiplication
 
-#### Operator `**`
-- `number` ** `number` performs the power operation (first to the power of second), returns a `number`
-- `string` ** `number` casts `string` as a `number` (if not possible an exception is thrown) and performs the power operation
-- `number` ** `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the power operation
-- `string` ** `string` casts the values as `number` (if not possible an exception is thrown) and performs the power operation
+#### Operator `^`
+- `number` ^ `number` performs the power operation (first to the power of second), returns a `number`
+    - Can be used to get radicals with non-integer exponents
+- `string` ^ `number` casts `string` as a `number` (if not possible an exception is thrown) and performs the power operation
+- `number` ^ `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the power operation
+- `string` ^ `string` casts the values as `number` (if not possible an exception is thrown) and performs the power operation
+
+#### Operator `^^`
+- `number` ^^ `number` performs the integer power operation (first to the power of second), returns an integer `number`. Power operation result gets floored to get it as integer
+    - Can be used to get radicals with non-integer exponents
+- `string` ^^ `number` casts `string` as a `number` (if not possible an exception is thrown) and performs the integer power operation
+- `number` ^^ `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the integer power operation
+- `string` ^^ `string` casts the values as `number` (if not possible an exception is thrown) and performs the integer power operation
 
 #### Operator `/`
 - `number` / `number` performs the division of the two numbers (second `number` must be a not zero value, otherwise an exception is thrown), returns a `number`
@@ -117,7 +125,7 @@ output: `['value provided', 5, [3.54, 3.54], 'value provided']`
 - `string` / `string` casts the values as `number` (if not possible an exception is thrown) and performs the division, returns a `number`
 
 #### Operator `//`
-- `number` // `number` performs the integer division of the two numbers (second `number` must be a not zero value, otherwise an exception is thrown), returns an integer `number`
+- `number` // `number` performs the integer division of the two numbers (second `number` must be a not zero value, otherwise an exception is thrown), returns an integer `number`. Division operation result gets floored to get it as integer
 - `string` // `number` casts `string` as a `number` (if not possible an exception is thrown) and performs the integer division, returns a `number`
 - `number` // `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the integer division, returns a `number`
 - `string` // `string` casts the values as `number` (if not possible an exception is thrown) and performs the integer division, returns a `number`
@@ -129,7 +137,7 @@ output: `['value provided', 5, [3.54, 3.54], 'value provided']`
 - `string` % `string` casts the values as `number` (if not possible an exception is thrown) and performs the modulus division, returns a `number`
 
 #### Operator `%%`
-- `number` %% `number` performs the modulus division (double numbers included) of the two numbers (second `number` must be a not zero value, otherwise an exception is thrown), returns an integer `number`
+- `number` %% `number` performs the modulus division (double numbers included) of the two numbers (second `number` must be a not zero value, otherwise an exception is thrown), returns an integer `number`. Modulus operation result gets floored to get it as integer
 - `string` %% `number` casts `string` as a `number` (if not possible an exception is thrown) and performs the modulus division, returns an integer `number`
 - `number` %% `string` casts `string` as a `number` (if not possible an exception is thrown) and performs the modulus division, returns an integer `number`
 - `string` %% `string` casts the values as `number` (if not possible an exception is thrown) and performs the modulus division, returns an integer `number`

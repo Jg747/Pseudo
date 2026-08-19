@@ -8,6 +8,9 @@
 #include "expression/expression.hpp"
 #include "expression/variablecontext.hpp"
 
+#include "components/literals/value.hpp"
+#include "components/literals/numbervalue.hpp"
+
 int main(int argc, char** argv) {
     using namespace std;
 

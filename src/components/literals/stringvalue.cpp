@@ -17,7 +17,12 @@ StringValue::StringValue(std::string value) {
 }
 
 StringValue::StringValue(const Value& val) {
-    std::string v = val.get_value();
+    std::string v;
+    if (dynamic_cast<const NumberValue*>(&val)) {
+        v = ((const NumberValue*) &val)->get_value();
+    } else {
+        v = val.get_value();
+    }
     set_value(v);
 }
 

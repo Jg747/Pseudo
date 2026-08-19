@@ -15,8 +15,12 @@ enum class token_t {
     Minus,
     UnaryMinus,
     Multiply,
+    Pow,
+    IntPow,
     Divide,
+    IntDiv,
     Modulo,
+    IntMod,
 
     LeftParen,
     RightParen,

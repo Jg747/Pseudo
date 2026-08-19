@@ -44,8 +44,12 @@ public:
     friend std::unique_ptr<Value> operator+(Value& val1, Value& val2);
     friend std::unique_ptr<Value> operator-(Value& val1, Value& val2);
     friend std::unique_ptr<Value> operator*(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> pow(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> int_pow(Value& val1, Value& val2);
     friend std::unique_ptr<Value> operator/(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> int_div(Value& val1, Value& val2);
     friend std::unique_ptr<Value> operator%(Value& val1, Value& val2);
+    friend std::unique_ptr<Value> int_mod(Value& val1, Value& val2);
 
     friend std::unique_ptr<Value> operator<(Value& val1, Value& val2);
     friend std::unique_ptr<Value> operator>(Value& val1, Value& val2);

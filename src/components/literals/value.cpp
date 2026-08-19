@@ -72,11 +72,11 @@ std::unique_ptr<Value> operator+(Value& val1, Value& val2) {
             return (v1 + v2).clone();
         } else if (dynamic_cast<StringValue*>(&val2)) {
             StringValue& v2 = static_cast<StringValue&>(val2);
-            return ((StringValue&) v1 + v2).clone();
+            return ((StringValue) v1 + v2).clone();
         }
     } else if (dynamic_cast<StringValue*>(&val1) && !dynamic_cast<ArrayValue*>(&val2)) {
         StringValue& v1 = static_cast<StringValue&>(val1);
-        StringValue& v2 = static_cast<StringValue&>(val2);
+        StringValue v2 = StringValue(val2);
         return (v1 + v2).clone();
     } else if (dynamic_cast<ArrayValue*>(&val1)) {
         ArrayValue& v1 = static_cast<ArrayValue&>(val1);
@@ -137,6 +137,52 @@ std::unique_ptr<Value> operator*(Value& val1, Value& val2) {
     throw std::runtime_error("Invalid cast Value provided (operator '*')");
 }
 
+std::unique_ptr<Value> pow(Value& val1, Value& val2) {
+    if (dynamic_cast<NumberValue*>(&val1)) {
+        NumberValue& v1 = static_cast<NumberValue&>(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::pow(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::pow(v1, v2).clone();
+        }
+    } else if (dynamic_cast<StringValue*>(&val1)) {
+        NumberValue v1(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::pow(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::pow(v1, v2).clone();
+        }
+    }
+    throw std::runtime_error("Invalid cast Value provided (operator '**')");
+}
+
+std::unique_ptr<Value> int_pow(Value& val1, Value& val2) {
+    if (dynamic_cast<NumberValue*>(&val1)) {
+        NumberValue& v1 = static_cast<NumberValue&>(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_pow(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_pow(v1, v2).clone();
+        }
+    } else if (dynamic_cast<StringValue*>(&val1)) {
+        NumberValue v1(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_pow(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_pow(v1, v2).clone();
+        }
+    }
+    throw std::runtime_error("Invalid cast Value provided (operator '**')");
+}
+
 std::unique_ptr<Value> operator/(Value& val1, Value& val2) {
     if (dynamic_cast<NumberValue*>(&val1)) {
         NumberValue& v1 = static_cast<NumberValue&>(val1);
@@ -160,6 +206,29 @@ std::unique_ptr<Value> operator/(Value& val1, Value& val2) {
     throw std::runtime_error("Invalid cast Value provided (operator '/')");
 }
 
+std::unique_ptr<Value> int_div(Value& val1, Value& val2) {
+    if (dynamic_cast<NumberValue*>(&val1)) {
+        NumberValue& v1 = static_cast<NumberValue&>(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_div(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_div(v1, v2).clone();
+        }
+    } else if (dynamic_cast<StringValue*>(&val1)) {
+        NumberValue v1(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_div(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_div(v1, v2).clone();
+        }
+    }
+    throw std::runtime_error("Invalid cast Value provided (operator '//')");
+}
+
 std::unique_ptr<Value> operator%(Value& val1, Value& val2) {
     if (dynamic_cast<NumberValue*>(&val1)) {
         NumberValue& v1 = static_cast<NumberValue&>(val1);
@@ -178,6 +247,29 @@ std::unique_ptr<Value> operator%(Value& val1, Value& val2) {
         } else if (dynamic_cast<StringValue*>(&val2)) {
             NumberValue v2(val2);
             return (v1 % v2).clone();
+        }
+    }
+    throw std::runtime_error("Invalid cast Value provided (operator '%%')");
+}
+
+std::unique_ptr<Value> int_mod(Value& val1, Value& val2) {
+    if (dynamic_cast<NumberValue*>(&val1)) {
+        NumberValue& v1 = static_cast<NumberValue&>(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_mod(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_mod(v1, v2).clone();
+        }
+    } else if (dynamic_cast<StringValue*>(&val1)) {
+        NumberValue v1(val1);
+        if (dynamic_cast<NumberValue*>(&val2)) {
+            NumberValue& v2 = static_cast<NumberValue&>(val2);
+            return NumberValue::int_mod(v1, v2).clone();
+        } else if (dynamic_cast<StringValue*>(&val2)) {
+            NumberValue v2(val2);
+            return NumberValue::int_mod(v1, v2).clone();
         }
     }
     throw std::runtime_error("Invalid cast Value provided (operator '%')");

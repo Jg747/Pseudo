@@ -66,7 +66,7 @@ void Lexer::process_identifier() {
     }
             
     std::string s = expression.substr(start, i - start);
-            
+
     if (s == "AND") {
         tokens.emplace_back(token_t::LogicalAnd);
     } else if (s == "OR") {
@@ -84,18 +84,42 @@ void Lexer::process_special() {
         case '*':
             tokens.emplace_back(token_t::Multiply);
             break;
-        case '/':
-            tokens.emplace_back(token_t::Divide);
+        case '^': {
+            i++;
+            if (expression[i] == '^') {
+                tokens.emplace_back(token_t::IntPow);
+            } else {
+                tokens.emplace_back(token_t::Pow);
+                i--;
+            }
             break;
+        }
+        case '/': {
+            i++;
+            if (expression[i] == '/') {
+                tokens.emplace_back(token_t::IntDiv);
+            } else {
+                tokens.emplace_back(token_t::Divide);
+                i--;
+            }
+            break;
+        }
         case '(':
             tokens.emplace_back(token_t::LeftParen);
             break;
         case ')':
             tokens.emplace_back(token_t::RightParen);
             break;
-        case '%':
-            tokens.emplace_back(token_t::Modulo);
+        case '%': {
+            i++;
+            if (expression[i] == '%') {
+                tokens.emplace_back(token_t::IntMod);
+            } else {
+                tokens.emplace_back(token_t::Modulo);
+                i--;
+            }
             break;
+        }
         case '<': {
             i++;
             if (expression[i] == '=') {
@@ -136,14 +160,20 @@ void Lexer::process_special() {
             break;
         }
         case '-': {
-            const op_info* prec = Token::get_op_info(tokens.back().type);
-            bool unary =    tokens.empty() || 
-                            tokens.back().type == token_t::LeftParen || 
-                            (prec != nullptr && prec->position != op_pos::Postfix);
-            if (unary)
+            const op_info* prec;
+            if (!tokens.empty()) {
+                prec = Token::get_op_info(tokens.back().type);
+            } else {
+                prec = nullptr;
+            }
+            
+            bool unary = tokens.empty() || tokens.back().type == token_t::LeftParen || (prec != nullptr && prec->position != op_pos::Postfix);
+            
+            if (unary) {
                 tokens.emplace_back(token_t::UnaryMinus);
-            else
+            } else {
                 tokens.emplace_back(token_t::Minus);
+            }
             break;
         }
         case '?':

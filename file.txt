@@ -1,5 +1,23 @@
 FUNCTION main()
 BEGIN
-    s <- "1"
-    write -s
+    v <- 5 % 2.89284
+    write v, "\n"
+    
+    v <- v + ""
+    write v, "\n"
+    
+    i <- 0
+    WHILE (v[i] != ".")
+    BEGIN
+        i <- i + 1
+    END
+    
+    WHILE (v? != i)
+    BEGIN
+        v[i] <- ""
+    END
+    write v, "\n"
+
+    v <- v + 0
+    write v
 END

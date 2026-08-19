@@ -175,6 +175,11 @@ public:
     friend NumberValue operator||(NumberValue val1, double val2);
     friend NumberValue operator||(double val1, NumberValue val2);
 
+    static NumberValue pow(NumberValue val1, NumberValue val2);
+    static NumberValue int_pow(NumberValue val1, NumberValue val2);
+    static NumberValue int_div(NumberValue val1, NumberValue val2);
+    static NumberValue int_mod(NumberValue val1, NumberValue val2);
+
     NumberValue& operator=(Value& val);
 
     operator StringValue() const;

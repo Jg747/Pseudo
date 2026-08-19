@@ -55,10 +55,18 @@ std::string Token::print() const {
             return "UnaryMinus";
         case token_t::Multiply:
             return "Multiply";
+        case token_t::Pow:
+            return "Pow";
+        case token_t::IntPow:
+            return "IntPow";
         case token_t::Divide:
             return "Divide";
+        case token_t::IntDiv:
+            return "IntDiv";
         case token_t::Modulo:
             return "Modulo";
+        case token_t::IntMod:
+            return "IntMod";
         case token_t::LeftParen:
             return "LeftParen";
         case token_t::RightParen:
@@ -105,16 +113,21 @@ std::ostream& operator<<(std::ostream& os, const Token& c) {
 
 const op_info* Token::get_op_info(token_t type) {
     static const std::unordered_map<token_t, op_info> table = {
-        { token_t::FunctionCall, {9, false, -1, op_pos::Postfix}},
+        { token_t::FunctionCall, {11, false, -1, op_pos::Postfix}},
 
-        { token_t::ArraySize,    {9, true, 1, op_pos::Postfix}},
-        { token_t::ArrayIndex,   {9, false, 2, op_pos::Infix} },
+        { token_t::ArraySize,    {10, false, 1, op_pos::Postfix}},
+        { token_t::ArrayIndex,   {10, false, 2, op_pos::Infix} },
+
+        { token_t::Pow,          {9, true, 2, op_pos::Infix} },
+        { token_t::IntPow,          {9, true, 2, op_pos::Infix} },
 
         { token_t::UnaryMinus,   {8, true, 1, op_pos::Prefix} },
 
         { token_t::Multiply,     {7, false, 2, op_pos::Infix} },
         { token_t::Divide,       {7, false, 2, op_pos::Infix} },
+        { token_t::IntDiv,       {7, false, 2, op_pos::Infix} },
         { token_t::Modulo,       {7, false, 2, op_pos::Infix} },
+        { token_t::IntMod,       {7, false, 2, op_pos::Infix} },
 
         { token_t::Plus,         {6, false, 2, op_pos::Infix} },
         { token_t::Minus,        {6, false, 2, op_pos::Infix} },

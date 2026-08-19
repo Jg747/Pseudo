@@ -239,17 +239,35 @@ void Expression::operation(std::stack<std::shared_ptr<Value>>& values, const Tok
         case token_t::Multiply:
             values.push((*lhs * *rhs));
             break;
+        case token_t::Pow:
+            values.push(pow(*lhs, *rhs));
+            break;
+        case token_t::IntPow:
+            values.push(int_pow(*lhs, *rhs));
+            break;
         case token_t::Divide:
             if (((NumberValue) *rhs) == 0.0) {
                 throw std::runtime_error("Division by zero.");
             }
             values.push((*lhs / *rhs));
             break;
+        case token_t::IntDiv:
+            if (((NumberValue) *rhs) == 0.0) {
+                throw std::runtime_error("Division by zero.");
+            }
+            values.push(int_div(*lhs, *rhs));
+            break;
         case token_t::Modulo:
             if (((NumberValue) *rhs) == 0.0) {
                 throw std::runtime_error("Division by zero.");
             }
             values.push((*lhs % *rhs));
+            break;
+        case token_t::IntMod:
+            if (((NumberValue) *rhs) == 0.0) {
+                throw std::runtime_error("Division by zero.");
+            }
+            values.push(int_mod(*lhs, *rhs));
             break;
         case token_t::Less:
             values.push((*lhs < *rhs));
@@ -325,8 +343,12 @@ std::shared_ptr<Value> Expression::evaluate(VariableContext& context) {
             case token_t::Plus:
             case token_t::Minus:
             case token_t::Multiply:
+            case token_t::Pow:
+            case token_t::IntPow:
             case token_t::Divide:
+            case token_t::IntDiv:
             case token_t::Modulo:
+            case token_t::IntMod:
             case token_t::Less:
             case token_t::LessEqual:
             case token_t::Greater:

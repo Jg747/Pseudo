@@ -65,6 +65,10 @@ void NumberValue::set_value(std::string& val) {
             this->type = numbertype_e::Integer;
         } else {
             this->type = numbertype_e::Double;
+
+            if (val.find_last_not_of("0") != val.length() - 1) {
+                val = val.substr(0, val.find_last_not_of("0") + 1);
+            }
         }
     } else {
         this->type = numbertype_e::Integer;
@@ -153,6 +157,24 @@ NumberValue operator*(NumberValue val1, NumberValue val2) {
     return NumberValue(v1 * v2);
 }
 
+NumberValue NumberValue::pow(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
+    
+    double res = std::pow(v1, v2);
+
+    return NumberValue(res);
+}
+
+NumberValue NumberValue::int_pow(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
+    
+    int res = std::pow(v1, v2);
+
+    return NumberValue(res);
+}
+
 NumberValue operator/(NumberValue val1, NumberValue val2) {
     double v1 = val1.get_double_value();
     double v2 = val2.get_double_value();
@@ -161,22 +183,40 @@ NumberValue operator/(NumberValue val1, NumberValue val2) {
         throw std::runtime_error("0 division detected");
     }
 
-    if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
-        return NumberValue((int) v1 / (int) v2);
-    }
-
     return NumberValue(v1 / v2);
 }
 
-NumberValue operator%(NumberValue val1, NumberValue val2) {
-    double v1 = (double) val1.get_double_value();
-    double v2 = (double) val2.get_double_value();
+NumberValue NumberValue::int_div(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
 
-    if (val1.get_type() == numbertype_e::Integer && val2.get_type() == numbertype_e::Integer) {
-        return NumberValue((int) v1 % (int) v2);
+    if (v2 == 0) {
+        throw std::runtime_error("0 division detected");
+    }
+
+    return NumberValue((int) v1 / (int) v2);
+}
+
+NumberValue operator%(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
+
+    if (v2 == 0) {
+        throw std::runtime_error("0 division detected");
     }
 
     return NumberValue(std::fmod(v1, v2));
+}
+
+NumberValue NumberValue::int_mod(NumberValue val1, NumberValue val2) {
+    double v1 = val1.get_double_value();
+    double v2 = val2.get_double_value();
+
+    if (v2 == 0) {
+        throw std::runtime_error("0 division detected");
+    }
+
+    return NumberValue((int) std::fmod(v1, v2));
 }
 
 NumberValue operator+(Value* val1, NumberValue val2) {
@@ -905,6 +945,9 @@ NumberValue::operator StringValue() const {
     std::string s;
     if (this->get_type() == numbertype_e::Double) {
         s = std::to_string(this->get_double_value());
+        if (s.find_last_not_of("0") != s.length() - 1) {
+            s = s.substr(0, s.find_last_not_of("0") + 1);
+        }
     } else {
         s = std::to_string(this->get_int_value());
     }

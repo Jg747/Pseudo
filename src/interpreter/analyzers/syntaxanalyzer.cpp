@@ -973,10 +973,10 @@ bool WriteAnalyzer::parse_expression() {
         return false;
     }
             
-    if (var.ends_with(STRING_BRACKET_CHAR)) {
+    /*if (var.ends_with(STRING_BRACKET_CHAR)) {
         a->stop_interpreter(WRITE_SYNTAX_ERROR);
         return false;
-    }
+    }*/
 
     /*if (!check_var_name(var)) {
         return false;
